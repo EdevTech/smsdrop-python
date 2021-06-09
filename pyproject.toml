@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "smsdrop-python"
+version = "0.1.0"
+description = "A python sdk for the smsdrop.net platform"
+authors = ["Tobi DEGNON <tobidegnon@protonmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/Tobi-De/smsdrop-python"
+keywords = [
+    "Sdk",
+    "Sms",
+    "Api",
+    "Smsdrop",
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+httpx = "^0.18.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
+mypy = "^0.901"
+flake8 = "^3.9.2"
+isort = "^5.8.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
