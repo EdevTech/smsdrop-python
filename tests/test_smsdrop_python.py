@@ -1,4 +1,4 @@
-from smsdrop_python import __version__
+from smsdrop import __version__
 
 
 def test_version():
