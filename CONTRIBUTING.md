@@ -9,7 +9,7 @@ You can contribute in many ways:
 
 ### Report Bugs
 
-Report bugs at https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}/issues.
+Report bugs at https://github.com/Tobi-De/smsdrop-python/issues.
 
 If you are reporting a bug, please include:
 
@@ -35,7 +35,7 @@ articles, and such.
 
 ### Submit Feedback
 
-The best way to send feedback is to file an issue at https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}/issues.
+The best way to send feedback is to file an issue at https://github.com/Tobi-De/smsdrop-python/issues.
 
 If you are proposing a feature:
 
@@ -46,13 +46,13 @@ If you are proposing a feature:
 
 ## Get Started!
 
-Ready to contribute? Here's how to set up `{{ cookiecutter.project_slug }}` for local development.
+Ready to contribute? Here's how to set up `smsdrop-python` for local development.
 
-1. Fork the `{{ cookiecutter.project_slug }}` repo on GitHub.
+1. Fork the `smsdrop-python` repo on GitHub.
 2. Clone your fork locally
 
 ```
-    $ git clone git@github.com:your_name_here/{{ cookiecutter.project_slug }}.git
+    $ git clone git@github.com:Tobi-De/smsdrop-python.git
 ```
 
 3. Ensure [poetry](https://python-poetry.org/docs/) is installed.
@@ -96,20 +96,14 @@ Before you submit a pull request, check that it meets these guidelines:
    your new functionality into a function with a docstring, and add the
    feature to the list in README.md.
 3. The pull request should work for Python 3.6, 3.7, 3.8, 3.9 and for PyPy. Check
-   https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}/actions
+   https://github.com/Tobi-De/smsdrop-python/actions
    and make sure that the tests pass for all supported Python versions.
 
 ## Tips
 
-{%- if cookiecutter.use_pytest == 'y' -%}
 ```
-    $ pytest tests.test_{{ cookiecutter.project_slug }}
+    $ pytest tests.test_smsdrop_python
 ```
-{%- else -%}
-```
-    $ python -m unittest tests.test_{{ cookiecutter.project_slug }}
-```
-{%- endif -%}
 
 To run a subset of tests.
 
