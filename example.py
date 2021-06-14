@@ -2,7 +2,7 @@ import time
 
 from dotenv import dotenv_values
 
-from smsdrop import CLient, Campaign
+from smsdrop import Client, Campaign
 
 config = dotenv_values(".env")
 
@@ -12,7 +12,7 @@ TEST_PASSWORD = config.get("TEST_PASSWORD")
 
 def main():
     # Initialize the client
-    client = CLient(email=TEST_EMAIL, password=TEST_PASSWORD)
+    client = Client(email=TEST_EMAIL, password=TEST_PASSWORD)
     # Get your account profile informations
     print(client.read_me())
     # Get your subscription informations

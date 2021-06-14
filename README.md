@@ -3,14 +3,18 @@
 [![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs)
 [![](https://img.shields.io/pypi/v/smsdrop-python.svg)](https://pypi.python.org/pypi/smsdrop-python)
 
-* Documentation: https://qosic-sdk.readthedocs.io.
+* Documentation: https://tobi-de.github.io/smsdrop-python/
 
-The official python sdk for the [smdrop](https://smsdrop.net) api.
+The official python sdk for the [smsdrop](https://smsdrop.net) api.
 
 ## Usage/Examples
 
 ```python
-from smsdrop import CLient, Campaign
+import time
+
+from dotenv import dotenv_values
+
+from smsdrop import Client, Campaign
 
 config = dotenv_values(".env")
 
@@ -20,7 +24,7 @@ TEST_PASSWORD = config.get("TEST_PASSWORD")
 
 def main():
     # Initialize the client
-    client = CLient(email=TEST_EMAIL, password=TEST_PASSWORD)
+    client = Client(email=TEST_EMAIL, password=TEST_PASSWORD)
     # Get your account profile informations
     print(client.read_me())
     # Get your subscription informations

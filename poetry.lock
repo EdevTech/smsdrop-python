@@ -273,6 +273,18 @@ Markdown = ">=3.3,<4.0"
 mkdocs = ">=1.1,<2.0"
 
 [[package]]
+name = "mkdocs-include-markdown-plugin"
+version = "3.1.3"
+description = "Mkdocs Markdown includer plugin."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+dev = ["bump2version (==1.0.1)", "flake8 (==3.9.1)", "flake8-implicit-str-concat (==0.2.0)", "flake8-print (==4.0.0)", "isort (==5.8.0)", "mdpo (==0.3.53)", "pre-commit (==2.12.1)", "pytest (==6.2.3)", "pytest-cov (==2.11.1)", "pyupgrade (==2.13.0)", "yamllint (==1.26.1)"]
+test = ["pytest (==6.2.3)", "pytest-cov (==2.11.1)"]
+
+[[package]]
 name = "mkdocs-material"
 version = "7.1.8"
 description = "A Material Design theme for MkDocs"
@@ -561,7 +573,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "257525746bf9a807d3996fecd0638e1bbfa5999ecc101ba7d7283ee08d783272"
+content-hash = "eee81fefa763962673c9c6d696e9b57740c52ee1d7382fade872ac1cf9132cb4"
 
 [metadata.files]
 anyio = [
@@ -686,6 +698,10 @@ mkdocs = [
 mkdocs-autorefs = [
     {file = "mkdocs-autorefs-0.2.1.tar.gz", hash = "sha256:b8156d653ed91356e71675ce1fa1186d2b2c2085050012522895c9aa98fca3e5"},
     {file = "mkdocs_autorefs-0.2.1-py3-none-any.whl", hash = "sha256:f301b983a34259df90b3fcf7edc234b5e6c7065bd578781e66fd90b8cfbe76be"},
+]
+mkdocs-include-markdown-plugin = [
+    {file = "mkdocs_include_markdown_plugin-3.1.3-py3-none-any.whl", hash = "sha256:eae611bd1a3a282adacdf50d4cb6113e60ea333243122584a41fde2486bc97d6"},
+    {file = "mkdocs_include_markdown_plugin-3.1.3.tar.gz", hash = "sha256:51c58a3b88d39906300e71fdcc003d5dbe07d0972a8ef156c8e261fe3c52fb1d"},
 ]
 mkdocs-material = [
     {file = "mkdocs-material-7.1.8.tar.gz", hash = "sha256:e555c66ece5eab7023c4733270dc7627280e707e5082dab278d6a7a4881d2435"},

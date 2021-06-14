@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class CLient:
+class Client:
     email: str
     password: str
     _bearer_token: Optional[str] = None

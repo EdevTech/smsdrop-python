@@ -1,7 +1,8 @@
-site_name: smsdrop-python
+site_name: Smsdrop-Python
 repo_url: https://github.com/Tobi-De/smsdrop-python
+site_description: The official python sdk for the smsdrop.net api.
+site_url: https://tobi-de.github.io/smsdrop-python/
 repo_name: smsdrop-python
-
 nav:
   - home: index.md
   - installation: installation.md
@@ -14,12 +15,21 @@ theme:
   name: material
   language: en
   palette:
-    primary: dark blue
+    - scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+    - scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
   features:
-    - navigation.indexes
-    - navigation.tabs
-    - navigation.instant
-    - navigation.tabs.sticky
+    - search.suggest
+    - search.highlight
 markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
