@@ -1,0 +1,2 @@
+::: smsdrop.Client
+    handler: python

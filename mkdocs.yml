@@ -1,0 +1,61 @@
+site_name: smsdrop-python
+repo_url: https://github.com/Tobi-De/smsdrop-python
+repo_name: smsdrop-python
+
+nav:
+  - home: index.md
+  - installation: installation.md
+  - usage: usage.md
+  - reference: reference.md
+  - contributing: contributing.md
+  - authors: authors.md
+  - history: history.md
+theme:
+  name: material
+  language: en
+  palette:
+    primary: dark blue
+  features:
+    - navigation.indexes
+    - navigation.tabs
+    - navigation.instant
+    - navigation.tabs.sticky
+markdown_extensions:
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.tabbed
+  - attr_list
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight:
+      linenums: true
+  - pymdownx.superfences
+  - pymdownx.details
+  - admonition
+  - toc:
+      baselevel: 2
+      permalink: true
+      slugify: !!python/name:pymdownx.slugs.uslugify
+  - meta
+plugins:
+  - include-markdown
+  - search:
+      lang: en
+  - mkdocstrings:
+      watch:
+        - smsdrop-python
+extra:
+  social:
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/Tobi71110248
+      name: Tweet
+    - icon: fontawesome/brands/github
+      link: https://github.com/Tobi-De/smsdrop-python
+      name: Github
+    - icon: material/email
+      link: "mailto:degnonfrancis@gmail.com"

@@ -1,3 +1,5 @@
+import time
+
 from dotenv import dotenv_values
 
 from smsdrop import CLient, Campaign
@@ -9,32 +11,29 @@ TEST_PASSWORD = config.get("TEST_PASSWORD")
 
 
 def main():
+    # Initialize the client
     client = CLient(email=TEST_EMAIL, password=TEST_PASSWORD)
-    # client.send_sms(message="hi", sender="Max", phone="22963588213")
-
-    print("------------User-------------")
+    # Get your account profile informations
     print(client.read_me())
-    print("--------Subscription---------")
+    # Get your subscription informations
     print(client.read_subscription())
-    print("--------Campaigns---------")
-    print(client.read_campaigns())
+    # Get your first 500 campaigns
+    print(client.read_campaigns(skip=0, limit=500))
+
+    # Send a simple sms
+    client.send_sms(message="hi", sender="Max", phone="<phone>")
+
+    # Create a new Campaign
     cp = Campaign(
-        title="jagann",
-        message="hi there",
-        sender="Client",
-        recipient_list=["22963588213"],
+        title="Test Campaign",
+        message="Test campaign content",
+        sender="TestUser",
+        recipient_list=["<phone1>", "<phone2>", "<phone3>"],
     )
     client.launch_campaign(cp)
-    # cp = client.read_campaign(id="b8fa5494-a1d2-4714-b738-2830e3f5d0fb")
-    # print("--before refresh")
-    # print(cp.as_dict())
-    # import time
-    # time.sleep(70)
-    # client.refresh_campaign(cp)
-    # print("--after refresh")
-    # print(cp.as_dict())
-
-    # print(cp.as_dict())
+    time.sleep(20)  # wait for 20 seconds for the campaign to proceed
+    client.refresh_campaign(cp)  # refresh your campaign data
+    print(cp.status)  # Output Example : COMPLETED
 
 
 if __name__ == "__main__":
