@@ -582,7 +582,7 @@ helps, and credit will always be given.</p>
 <p>You can contribute in many ways:</p>
 <h3 id="types-of-contributions">Types of Contributions<a class="headerlink" href="#types-of-contributions" title="Permanent link">&para;</a></h3>
 <h4 id="report-bugs">Report Bugs<a class="headerlink" href="#report-bugs" title="Permanent link">&para;</a></h4>
-<p>Report bugs at https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}/issues.</p>
+<p>Report bugs at https://github.com/Tobi-De/smsdrop-python/issues.</p>
 <p>If you are reporting a bug, please include:</p>
 <ul>
 <li>Your operating system name and version.</li>
@@ -600,7 +600,7 @@ and "help wanted" is open to whoever wants to implement it.</p>
 official {{ cookiecutter.project_name }} docs, in docstrings, or even on the web in blog posts,
 articles, and such.</p>
 <h4 id="submit-feedback">Submit Feedback<a class="headerlink" href="#submit-feedback" title="Permanent link">&para;</a></h4>
-<p>The best way to send feedback is to file an issue at https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}/issues.</p>
+<p>The best way to send feedback is to file an issue at https://github.com/Tobi-De/smsdrop-python/issues.</p>
 <p>If you are proposing a feature:</p>
 <ul>
 <li>Explain in detail how it would work.</li>
@@ -609,12 +609,12 @@ articles, and such.</p>
   are welcome :)</li>
 </ul>
 <h3 id="get-started">Get Started!<a class="headerlink" href="#get-started" title="Permanent link">&para;</a></h3>
-<p>Ready to contribute? Here's how to set up <code>{{ cookiecutter.project_slug }}</code> for local development.</p>
+<p>Ready to contribute? Here's how to set up <code>smsdrop-python</code> for local development.</p>
 <ol>
-<li>Fork the <code>{{ cookiecutter.project_slug }}</code> repo on GitHub.</li>
+<li>Fork the <code>smsdrop-python</code> repo on GitHub.</li>
 <li>Clone your fork locally</li>
 </ol>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>    $ git clone git@github.com:your_name_here/{{ cookiecutter.project_slug }}.git
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>    $ git clone git@github.com:Tobi-De/smsdrop-python.git
 </code></pre></div>
 </td></tr></table>
 <ol>
@@ -659,18 +659,13 @@ articles, and such.</p>
    your new functionality into a function with a docstring, and add the
    feature to the list in README.md.</li>
 <li>The pull request should work for Python 3.6, 3.7, 3.8, 3.9 and for PyPy. Check
-   https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}/actions
+   https://github.com/Tobi-De/smsdrop-python/actions
    and make sure that the tests pass for all supported Python versions.</li>
 </ol>
 <h3 id="tips">Tips<a class="headerlink" href="#tips" title="Permanent link">&para;</a></h3>
-<p -_="-%" _-="%-" endif="endif">{%- if cookiecutter.use_pytest == 'y' -%}
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>    $ pytest tests.test_{{ cookiecutter.project_slug }}
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>    $ pytest tests.test_smsdrop_python
 </code></pre></div>
 </td></tr></table>
-{%- else -%}
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code>    $ python -m unittest tests.test_{{ cookiecutter.project_slug }}
-</code></pre></div>
-</td></tr></table></p>
 <p>To run a subset of tests.</p>
 <h3 id="deploying">Deploying<a class="headerlink" href="#deploying" title="Permanent link">&para;</a></h3>
 <p>A reminder for the maintainers on how to deploy.
