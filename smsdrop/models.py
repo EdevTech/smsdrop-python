@@ -9,6 +9,7 @@ class ShipmentState(str, Enum):
     SENDING = "SENDING"
     COMPLETED = "COMPLETED"
     ABORTED = "ABORTED"
+    SCHEDULED = "SCHEDULED"
 
 
 class MessageType(IntEnum):
@@ -30,7 +31,8 @@ campaign_public_fields = [
     "message_type",
     "sender",
     "recipient_list",
-    "dispatch_date",
+    "defer_until",
+    "defer_by",
 ]
 
 
@@ -41,7 +43,8 @@ class Campaign:
     recipient_list: List[str] = field(repr=False)
     title: Optional[str] = None
     message_type: MessageType = MessageType.PLAIN_TEXT
-    dispatch_date: Optional[datetime.datetime] = None
+    defer_until: Optional[datetime.datetime] = None
+    defer_by: Optional[int] = None
 
     # private fields
     _status: ShipmentState = field(
@@ -51,6 +54,11 @@ class Campaign:
     _message_count: int = field(init=False, default=1, repr=False)
     _sms_count: int = field(init=False, default=1, repr=False)
     _id: Optional[str] = field(init=False, repr=False)
+
+    def __post_init__(self):
+        assert not (
+            self.defer_until and self.defer_by
+        ), "use either 'defer_until' or 'defer_by' or neither, not both"
 
     @property
     def id(self):
@@ -81,12 +89,8 @@ class Campaign:
         fields = only if only else fields
         fields = filter(lambda f: f not in strip, fields) if strip else fields
         data = {key: getattr(self, key) for key in fields if getattr(self, key, None)}
-        if self.dispatch_date:
-            data[
-                "dispatch_date"
-            ] = (
-                self.dispatch_date.isoformat()
-            )  # self.dispatch_date.strftime("%Y-%m-%d %H:%M")
+        if self.defer_until:
+            data["defer_until"] = self.defer_until.isoformat()
         return data
 
     def update(self, data: dict):
@@ -96,15 +100,15 @@ class Campaign:
 
     @classmethod
     def from_response(cls, data: dict):
-        dispatch_date = data["dispatch_date"]
-        if dispatch_date:
-            dispatch_date = datetime.datetime.fromisoformat(dispatch_date)
+        defer_until = data["defer_until"]
+        if defer_until:
+            defer_until = datetime.datetime.fromisoformat(defer_until)
         private_data = {key: data.pop(key[1:]) for key in campaign_private_fields}
         cp = Campaign(**data)
         cp.message_type = MessageType(data["message_type"])
         for f in campaign_private_fields:
             setattr(cp, f, private_data[f])
-        cp.dispatch_date = dispatch_date
+        cp.defer_until = defer_until
         return cp
 
 

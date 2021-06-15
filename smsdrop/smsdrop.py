@@ -67,7 +67,7 @@ class Client:
         )
 
     def _send_request(
-        self, path: str, payload: Optional[dict] = None
+            self, path: str, payload: Optional[dict] = None
     ) -> httpx.Response:
         try:
             response = (
@@ -87,11 +87,11 @@ class Client:
             return response
 
     def send_sms(
-        self,
-        message: str,
-        sender: str,
-        phone: str,
-        dispatch_date: Optional[datetime.datetime] = None,
+            self,
+            message: str,
+            sender: str,
+            phone: str,
+            dispatch_date: Optional[datetime.datetime] = None,
     ):
         payload = {
             "message": message,
@@ -124,15 +124,13 @@ class Client:
         refreshed_cp = self.read_campaign(id=campaign.id)
         campaign.update(refreshed_cp.as_dict())
 
-    def retry_campaign(self, campaign: Campaign):
+    def retry_campaign(self, id: str):
         payload = {"id": id}
         response = self._send_request(path=CAMPAIGN_RETRY_PATH, payload=payload)
         if response.status_code == codes.CREATED:
             raise InsufficientSmsError(
                 "Insufficient sms credits to launch this campaign"
             )
-        refreshed_cp = self.read_campaign(id=campaign.id)
-        campaign.update(refreshed_cp.as_dict())
 
     def read_campaign(self, id: str) -> Campaign:
         request_path = CAMPAIGN_BASE_PATH + f"/{id}"
