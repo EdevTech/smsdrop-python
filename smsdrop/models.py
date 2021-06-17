@@ -123,3 +123,12 @@ class User:
 class Subscription:
     id: str
     nbr_sms: int
+
+
+@dataclass(frozen=True)
+class Redis:
+    host: str = "localhost"
+    port: int = 6379
+    db: int = 0
+    username: Optional[str] = None
+    password: Optional[str] = None

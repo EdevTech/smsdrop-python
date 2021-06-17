@@ -1,5 +1,5 @@
 from .exceptions import ValidationError, BadCredentialsError, InsufficientSmsError, ServerError
-from .models import ShipmentState, MessageType, Campaign
+from .models import ShipmentState, MessageType, Campaign, Redis
 from .smsdrop import Client
 from .utils import make_recipient_list
 
