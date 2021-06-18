@@ -1,9 +1,8 @@
 import json
-import logging
+from functools import wraps
 
-from httpx import Response, Request
-
-logging.basicConfig(level=logging.DEBUG, format="%(message)s")
+import httpx
+from httpx import Response
 
 
 def get_json_response(response: Response) -> dict:
@@ -19,17 +18,15 @@ def get_json_response(response: Response) -> dict:
         return json_content
 
 
-def log_request(request: Request):
-    json_content = json.loads(request.content) if request.method == "POST" else {}
-    logging.debug(
-        f"Request: {request.method} {request.url} - Waiting for response\n"
-        f"Content: \n {json.dumps(json_content, indent=2, sort_keys=True)}"
-    )
+def log_request_error(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        try:
+            response = func(self, *args, **kwargs)
+        except httpx.RequestError as e:
+            self.logger.error(f"An error occurred while requesting {e.request.url}")
+            exit(-1)
+        else:
+            return response
 
-
-def log_response(response: Response):
-    request = response.request
-    logging.debug(
-        f"Response: {request.method} {request.url} - Status {response.status_code}\n"
-        f"Content : \n {json.dumps(response.json(), indent=2, sort_keys=True)}"
-    )
+    return wrapper

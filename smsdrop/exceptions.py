@@ -22,3 +22,7 @@ class ValidationError(Exception):
 
         msg = "\n".join([formatted_msg(error) for error in errors])
         super().__init__(msg)
+
+
+class BadTokenError(Exception):
+    pass

@@ -88,7 +88,11 @@ class Campaign:
         fields = campaign_public_fields + [f[1:] for f in campaign_private_fields]
         fields = only if only else fields
         fields = filter(lambda f: f not in strip, fields) if strip else fields
-        data = {key: getattr(self, key) for key in fields if getattr(self, key, None)}
+        data = {
+            key: getattr(self, key)
+            for key in fields
+            if getattr(self, key, None) is not None
+        }
         if self.defer_until:
             data["defer_until"] = self.defer_until.isoformat()
         return data
@@ -123,12 +127,3 @@ class User:
 class Subscription:
     id: str
     nbr_sms: int
-
-
-@dataclass(frozen=True)
-class Redis:
-    host: str = "localhost"
-    port: int = 6379
-    db: int = 0
-    username: Optional[str] = None
-    password: Optional[str] = None

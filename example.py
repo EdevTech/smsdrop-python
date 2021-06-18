@@ -1,8 +1,11 @@
+import logging
 import time
 
 from dotenv import dotenv_values
 
-from smsdrop import Client, Campaign
+from smsdrop import Client, Campaign, Redis
+
+logging.basicConfig(level=logging.DEBUG, format="%(message)s")
 
 config = dotenv_values(".env")
 
@@ -12,7 +15,7 @@ TEST_PASSWORD = config.get("TEST_PASSWORD")
 
 def main():
     # Initialize the client
-    client = Client(email=TEST_EMAIL, password=TEST_PASSWORD)
+    client = Client(email=TEST_EMAIL, password=TEST_PASSWORD, storage=Redis())
     # Get your account profile informations
     print(client.read_me())
     # Get your subscription informations

@@ -1,11 +1,12 @@
 import datetime
+import json
 import logging
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass
 from typing import Optional, List
 
 import httpx
-import redis
-from httpx import codes
+from httpx import codes, Request, Response
+from tenacity import retry, stop_after_attempt, retry_if_exception_type
 
 from .constants import (
     BASE_URL,
@@ -14,50 +15,64 @@ from .constants import (
     SUBSCRIPTION_PATH,
     CAMPAIGN_BASE_PATH,
     CAMPAIGN_RETRY_PATH,
+    TOKEN_LIFETIME,
 )
 from .exceptions import (
     ServerError,
     BadCredentialsError,
     InsufficientSmsError,
     ValidationError,
+    BadTokenError,
 )
-from .helpers import log_request, log_response, get_json_response
+from .helpers import get_json_response, log_request_error
 from .models import (
     Campaign,
     User,
     Subscription,
     MessageType,
     campaign_public_fields,
-    Redis,
 )
+from .storages import BaseStorage, SimpleDict
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
+
+
+def log_request(request: Request):
+    json_content = json.loads(request.content) if request.method == "POST" else {}
+    _logger.debug(
+        f"Request: {request.method} {request.url} - Waiting for response\n"
+        f"Content: \n {json.dumps(json_content, indent=2, sort_keys=True)}"
+    )
+
+
+def log_response(response: Response):
+    request = response.request
+    _logger.debug(
+        f"Response: {request.method} {request.url} - Status {response.status_code}\n"
+        f"Content : \n {json.dumps(response.json(), indent=2, sort_keys=True)}"
+    )
 
 
 @dataclass
 class Client:
     email: str
     password: str
-    active_logging: bool = False
-    storage: Redis = Redis()
-    _collected_responses: List[httpx.Response] = field(default_factory=list)
+    context: str = BASE_URL
+    storage: BaseStorage = SimpleDict()
 
     def __post_init__(self):
-        self._storage_client = redis.Redis(
-            **asdict(self.storage), decode_responses=True
-        )
-        self._set_token(new_token=self._login())
-        self._http_client = httpx.Client(
-            base_url=BASE_URL, headers={"Authorization": f"Bearer {self._token}"}
-        )
-        if self.active_logging:
-            self._http_client.event_hooks = {
-                "request": [log_request],
-                "response": [log_response, self._update_responses],
-            }
+        self.logger = _logger
+        self._http_client = httpx.Client(base_url=self.context)
+        self._refresh_token()
+        self._http_client.event_hooks = {
+            "request": [log_request],
+            "response": [log_response],
+        }
 
-    def _update_responses(self, r: httpx.Response):
-        self._collected_responses.append(r)
+    def _refresh_token(self):
+        token = self._login()
+        self._set_token(new_token=token)
+        self._http_client.headers["Authorization"] = f"Bearer {self._token}"
 
     @property
     def _token_storage_key(self):
@@ -65,59 +80,55 @@ class Client:
 
     @property
     def _token(self):
-        return self._storage_client.get(self._token_storage_key)
+        return self.storage.get(self._token_storage_key)
 
     def _set_token(self, new_token):
-        self._storage_client.set(self._token_storage_key, new_token)
+        # The api set it token to expire after 1 hour
+        self.storage.set(self._token_storage_key, new_token, ex=TOKEN_LIFETIME)
 
+    @log_request_error
     def _login(self) -> str:
         response = httpx.post(
-            url=BASE_URL + LOGIN_PATH,
+            url=self.context + LOGIN_PATH,
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             data={"username": self.email, "password": self.password},
         )
-        content = get_json_response(response)
-        if response.status_code == codes.OK:
-            return content["access_token"]
-        elif response.status_code == codes.BAD_REQUEST:
+        if response.status_code == codes.BAD_REQUEST:
             raise BadCredentialsError("Your credentials are incorrect")
-        elif codes.is_server_error(response.status_code):
-            raise ServerError("The server is failing, try later")
-        else:
-            logger.info(response.text)
+        if response.status_code == codes.OK:
+            content = get_json_response(response)
+            return content["access_token"]
 
-    def _token_has_expired(self) -> bool:
-        try:
-            response = httpx.get(
-                url=BASE_URL + USER_PATH,
-                headers={"Authorization": f"Bearer {self._token}"},
-            )
-        except httpx.RequestError as e:
-            logger.error(e)
-        else:
-            return response.status_code == codes.UNAUTHORIZED
-
+    @retry(
+        stop=stop_after_attempt(2),
+        retry=retry_if_exception_type(BadTokenError),
+        reraise=True,
+    )
+    @log_request_error
     def _send_request(
         self, path: str, payload: Optional[dict] = None
     ) -> httpx.Response:
-        if self._token_has_expired():
-            self._set_token(new_token=self._login())
-        try:
-            response = (
-                self._http_client.post(
-                    url=path, json=payload, headers={"content-type": "application/json"}
-                )
-                if payload
-                else self._http_client.get(url=path)
+        if not self._token:
+            self._refresh_token()
+        kwargs = {"url": path}
+        if payload:
+            kwargs.update(
+                {
+                    "json": payload,
+                    "headers": {"content-type": "application/json"},
+                }
             )
-        except httpx.RequestError as e:
-            logger.error(e)
-        else:
-            if codes.is_server_error(response.status_code):
-                raise ServerError("The server is failing, try later")
-            if response.status_code == codes.UNPROCESSABLE_ENTITY:
-                raise ValidationError(errors=response.json()["detail"])
-            return response
+        get = getattr(self._http_client, "get")
+        post = getattr(self._http_client, "post")
+        response: httpx.Response = post(**kwargs) if payload else get(**kwargs)
+        if response.status_code == codes.UNAUTHORIZED:
+            self.storage.delete(self._token_storage_key)
+            raise BadTokenError(response.request.url)
+        if codes.is_server_error(response.status_code):
+            raise ServerError("The server is failing, try later")
+        if response.status_code == codes.UNPROCESSABLE_ENTITY:
+            raise ValidationError(errors=response.json()["detail"])
+        return response
 
     def send_sms(
         self,
@@ -134,7 +145,7 @@ class Client:
         }
         if dispatch_date:
             payload["dispatch_date"] = dispatch_date
-        response = self._send_request(path=CAMPAIGN_BASE_PATH, payload=payload)
+        response = self._send_request(path=CAMPAIGN_BASE_PATH + "/", payload=payload)
         content = get_json_response(response)
         if response.status_code == codes.CREATED:
             raise InsufficientSmsError(
@@ -144,7 +155,7 @@ class Client:
 
     def launch_campaign(self, campaign: Campaign):
         payload = campaign.as_dict(only=campaign_public_fields)
-        response = self._send_request(path=CAMPAIGN_BASE_PATH, payload=payload)
+        response = self._send_request(path=CAMPAIGN_BASE_PATH + "/", payload=payload)
         content = get_json_response(response)
         if response.status_code == codes.CREATED:
             raise InsufficientSmsError(
@@ -182,7 +193,7 @@ class Client:
         return camaigns
 
     def read_subscription(self) -> Subscription:
-        response = self._send_request(path=SUBSCRIPTION_PATH)
+        response = self._send_request(path=SUBSCRIPTION_PATH + "/")
         content = get_json_response(response)
         return Subscription(id=content["id"], nbr_sms=content["nbr_sms"])
 
