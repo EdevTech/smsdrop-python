@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass, field, asdict
-from typing import Optional
 
 import redis
+from dataclasses import asdict, dataclass, field
+from typing import Optional
 
 
 @dataclass

@@ -5,7 +5,7 @@ import time
 import pytz
 from dotenv import dotenv_values
 
-from smsdrop import Client, Campaign, Redis
+from smsdrop import Campaign, Client, Redis
 
 # activate logging
 logging.basicConfig(level=logging.DEBUG, format="%(message)s")
@@ -67,8 +67,8 @@ def main():
     time.sleep(120)  # wait for 120 seconds for the campaign to proceed
     client.refresh_campaign(cp)  # refresh your campaign data
     print(cp.status)  # should output : COMPLETED
-    # If you get a 'SCHEDULED' printed, you can wait 10 more seconds in case the network is a little slow
-    # or the server is a busy
+    # If you get a 'SCHEDULED' printed, you can wait 10 more seconds in case the network
+    # is a little slow or the server is a busy
 
 
 if __name__ == "__main__":

@@ -1,44 +1,40 @@
 import datetime
 import json
 import logging
-from dataclasses import dataclass
-from typing import Optional, List
 
 import httpx
-from httpx import codes, Request, Response
-from tenacity import retry, stop_after_attempt, retry_if_exception_type
+from dataclasses import dataclass
+from httpx import Request, Response, codes
+from tenacity import retry, retry_if_exception_type, stop_after_attempt
+from typing import List, Optional
 
 from .constants import (
     BASE_URL,
-    LOGIN_PATH,
-    USER_PATH,
-    SUBSCRIPTION_PATH,
     CAMPAIGN_BASE_PATH,
     CAMPAIGN_RETRY_PATH,
+    LOGIN_PATH,
+    SUBSCRIPTION_PATH,
     TOKEN_LIFETIME,
+    USER_PATH,
 )
 from .exceptions import (
-    ServerError,
     BadCredentialsError,
-    InsufficientSmsError,
-    ValidationError,
     BadTokenError,
+    InsufficientSmsError,
+    ServerError,
+    ValidationError,
 )
 from .helpers import get_json_response, log_request_error
-from .models import (
-    Campaign,
-    User,
-    Subscription,
-    MessageType,
-    campaign_public_fields,
-)
+from .models import Campaign, Subscription, User, campaign_public_fields
 from .storages import BaseStorage, SimpleDict
 
 _logger = logging.getLogger(__name__)
 
 
 def log_request(request: Request):
-    json_content = json.loads(request.content) if request.method == "POST" else {}
+    json_content = (
+        json.loads(request.content) if request.method == "POST" else {}
+    )
     _logger.debug(
         f"Request: {request.method} {request.url} - Waiting for response\n"
         f"Content: \n {json.dumps(json_content, indent=2, sort_keys=True)}"
@@ -137,25 +133,18 @@ class Client:
         phone: str,
         dispatch_date: Optional[datetime.datetime] = None,
     ):
-        payload = {
-            "message": message,
-            "message_type": MessageType.PLAIN_TEXT,
-            "sender": sender,
-            "recipient_list": [phone],
-        }
-        if dispatch_date:
-            payload["dispatch_date"] = dispatch_date
-        response = self._send_request(path=CAMPAIGN_BASE_PATH + "/", payload=payload)
-        content = get_json_response(response)
-        if response.status_code == codes.CREATED:
-            raise InsufficientSmsError(
-                "Insufficient sms credits to launch this campaign"
-            )
-        return Campaign.from_response(content)
+        cp = Campaign(
+            message=message,
+            sender=sender,
+            recipient_list=[phone],
+            defer_until=dispatch_date,
+        )
+        self.launch_campaign(cp)
+        return cp
 
     def launch_campaign(self, campaign: Campaign):
         payload = campaign.as_dict(only=campaign_public_fields)
-        response = self._send_request(path=CAMPAIGN_BASE_PATH + "/", payload=payload)
+        response = self._send_request(path=CAMPAIGN_BASE_PATH, payload=payload)
         content = get_json_response(response)
         if response.status_code == codes.CREATED:
             raise InsufficientSmsError(
@@ -172,28 +161,32 @@ class Client:
 
     def retry_campaign(self, id: str):
         payload = {"id": id}
-        response = self._send_request(path=CAMPAIGN_RETRY_PATH, payload=payload)
+        response = self._send_request(
+            path=CAMPAIGN_RETRY_PATH, payload=payload
+        )
         if response.status_code == codes.CREATED:
             raise InsufficientSmsError(
                 "Insufficient sms credits to launch this campaign"
             )
 
     def read_campaign(self, id: str) -> Optional[Campaign]:
-        request_path = CAMPAIGN_BASE_PATH + f"/{id}"
+        request_path = CAMPAIGN_BASE_PATH + f"{id}"
         response = self._send_request(path=request_path)
         if response.status_code == codes.NOT_FOUND:
             return None
         content = get_json_response(response)
         return Campaign.from_response(data=content)
 
-    def read_campaigns(self, skip: int = 0, limit: int = 100) -> List[Campaign]:
-        request_path = CAMPAIGN_BASE_PATH + f"/?skip={skip}&limit={limit}"
+    def read_campaigns(
+        self, skip: int = 0, limit: int = 100
+    ) -> List[Campaign]:
+        request_path = CAMPAIGN_BASE_PATH + f"?skip={skip}&limit={limit}"
         response = self._send_request(path=request_path)
         camaigns = [Campaign.from_response(cp) for cp in response.json()]
         return camaigns
 
     def read_subscription(self) -> Subscription:
-        response = self._send_request(path=SUBSCRIPTION_PATH + "/")
+        response = self._send_request(path=SUBSCRIPTION_PATH)
         content = get_json_response(response)
         return Subscription(id=content["id"], nbr_sms=content["nbr_sms"])
 
@@ -201,5 +194,7 @@ class Client:
         response = self._send_request(path=USER_PATH)
         content = get_json_response(response)
         return User(
-            email=content["email"], id=content["id"], is_active=content["is_active"]
+            email=content["email"],
+            id=content["id"],
+            is_active=content["is_active"],
         )

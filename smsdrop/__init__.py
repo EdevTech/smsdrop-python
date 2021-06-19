@@ -1,14 +1,12 @@
-import httpx
-
 from .exceptions import (
-    ValidationError,
     BadCredentialsError,
     InsufficientSmsError,
     ServerError,
+    ValidationError,
 )
-from .models import ShipmentState, MessageType, Campaign
+from .models import Campaign, MessageType, ShipmentState
 from .smsdrop import Client
-from .storages import SimpleDict, Redis, Dummy
+from .storages import Dummy, Redis, SimpleDict
 from .utils import make_recipient_list
 
 __author__ = """Tobi DEGNON"""

@@ -1,6 +1,7 @@
 import csv
 import os
-from typing import Union, List, Generator
+
+from typing import Generator, List, Union
 
 csv_headers = ["phone", "phones", "phone_number", "phone_numbers", "tel"]
 

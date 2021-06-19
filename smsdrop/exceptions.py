@@ -18,7 +18,11 @@ class ValidationError(Exception):
             source = loc[1]
             extra = loc[2:]
             detail = error["msg"]
-            return f"{source}{extra}: {detail}" if extra else f"{source}: {detail}"
+            return (
+                f"{source}{extra}: {detail}"
+                if extra
+                else f"{source}: {detail}"
+            )
 
         msg = "\n".join([formatted_msg(error) for error in errors])
         super().__init__(msg)

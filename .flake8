@@ -1,5 +1,6 @@
 [flake8]
 ignore = E211, E999, F401, F821, W503
+max-line-length = 120
 max-doc-length = 88
 max-complexity = 18
 select = B,C,E,F,W,T4
@@ -11,6 +12,7 @@ exclude =
     setup.py,
     build,
     dist,
+    site,
     releases,
     .venv,
     .tox,

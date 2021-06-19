@@ -1,7 +1,8 @@
 import datetime
+
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
-from typing import Optional, List
+from typing import List, Optional
 
 
 class ShipmentState(str, Enum):
@@ -83,9 +84,13 @@ class Campaign:
     def as_dict(
         self, strip: Optional[list] = None, only: Optional[list] = None
     ) -> dict:
-        assert not (strip and only), "use either 'strip' or 'only' or neither, not both"
+        assert not (
+            strip and only
+        ), "use either 'strip' or 'only' or neither, not both"
         # strip the '_' from the private fields
-        fields = campaign_public_fields + [f[1:] for f in campaign_private_fields]
+        fields = campaign_public_fields + [
+            f[1:] for f in campaign_private_fields
+        ]
         fields = only if only else fields
         fields = filter(lambda f: f not in strip, fields) if strip else fields
         data = {
@@ -107,7 +112,9 @@ class Campaign:
         defer_until = data["defer_until"]
         if defer_until:
             defer_until = datetime.datetime.fromisoformat(defer_until)
-        private_data = {key: data.pop(key[1:]) for key in campaign_private_fields}
+        private_data = {
+            key: data.pop(key[1:]) for key in campaign_private_fields
+        }
         cp = Campaign(**data)
         cp.message_type = MessageType(data["message_type"])
         for f in campaign_private_fields:

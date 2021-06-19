@@ -13,7 +13,9 @@ def get_json_response(response: Response) -> dict:
         return default
     else:
         json_content = (
-            json_content if json_content and isinstance(json_content, dict) else default
+            json_content
+            if json_content and isinstance(json_content, dict)
+            else default
         )
         return json_content
 
@@ -24,7 +26,9 @@ def log_request_error(func):
         try:
             response = func(self, *args, **kwargs)
         except httpx.RequestError as e:
-            self.logger.error(f"An error occurred while requesting {e.request.url}")
+            self.logger.error(
+                f"An error occurred while requesting {e.request.url}"
+            )
             exit(-1)
         else:
             return response
