@@ -39,6 +39,22 @@ campaign_public_fields = [
 
 @dataclass
 class Campaign:
+    """Represent a campaign
+
+    :param str title: A title intended to help you identify this campaign,
+    a random name will be generated if you do not provide one.
+    :param str message: The content of your message
+    :param MessageType message_type: The message type, the possible values are
+    `MessageType.PLAIN_TEXT`, `MessageType.UNICODE`, `MessageType.FLASH_MESSAGE`
+    :param str sender:  The sender name that will be displayed on the recipient's phone.
+    :param Optional[datetime.datetime] defer_until: The launch date of your campaign.
+    It is recommended to specify your timezone infos in order to avoid surprises.
+    :param Optional[int] defer_by: The number of seconds the launch will be postponed.
+    :param List[str] recipient_list: The list of users the message will be sent to.
+    Ex ["phone1", "phone2"]. The phone number format is '{code}{local_number}' ,
+    Ex: +22963588213, the "+" at the beginning is optional.
+    """
+
     message: str
     sender: str
     recipient_list: List[str] = field(repr=False)
@@ -84,6 +100,13 @@ class Campaign:
     def as_dict(
         self, strip: Optional[list] = None, only: Optional[list] = None
     ) -> dict:
+        """Return a dict equivalent of your campaign
+
+        :param strip: The fields that should be strip out
+        :param only: The fields that should be received
+
+        Note that you can only set one of the parameters, not both
+        """
         assert not (
             strip and only
         ), "use either 'strip' or 'only' or neither, not both"
@@ -103,12 +126,21 @@ class Campaign:
         return data
 
     def update(self, data: dict):
+        """Update the campaign with the data from the dictionnary
+
+        :param data: The dictionary containing the data
+        """
+
         for f in campaign_private_fields:
             setattr(self, f, data.get(f[1:]))
         self.title = data["title"]
 
     @classmethod
-    def from_response(cls, data: dict):
+    def from_dict(cls, data: dict):
+        """Create a new instance from a dictionary
+
+        :param data:The dictionary containing the data
+        """
         defer_until = data["defer_until"]
         if defer_until:
             defer_until = datetime.datetime.fromisoformat(defer_until)
@@ -125,6 +157,8 @@ class Campaign:
 
 @dataclass(frozen=True)
 class User:
+    """Base user class"""
+
     id: str
     email: str
     is_active: bool
@@ -132,5 +166,7 @@ class User:
 
 @dataclass(frozen=True)
 class Subscription:
+    """Base subscription class"""
+
     id: str
     nbr_sms: int

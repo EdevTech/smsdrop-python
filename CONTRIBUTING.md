@@ -29,8 +29,8 @@ and "help wanted" is open to whoever wants to implement it.
 
 ### Write Documentation
 
-{{ cookiecutter.project_name }} could always use more documentation, whether as part of the
-official {{ cookiecutter.project_name }} docs, in docstrings, or even on the web in blog posts,
+smsdrop-python could always use more documentation, whether as part of the
+official smsdrop-python docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 ### Submit Feedback
@@ -51,21 +51,21 @@ Ready to contribute? Here's how to set up `smsdrop-python` for local development
 1. Fork the `smsdrop-python` repo on GitHub.
 2. Clone your fork locally
 
-```
-    $ git clone git@github.com:Tobi-De/smsdrop-python.git
+```shell
+$ git clone git@github.com:Tobi-De/smsdrop-python.git
 ```
 
 3. Ensure [poetry](https://python-poetry.org/docs/) is installed.
 4. Install dependencies and start your virtualenv:
 
-```
-    $ poetry install -E test -E doc -E dev
+```shell
+$ poetry install -E test -E doc -E dev
 ```
 
 5. Create a branch for local development:
 
-```
-    $ git checkout -b name-of-your-bugfix-or-feature
+```shell
+$ git checkout -b name-of-your-bugfix-or-feature
 ```
 
    Now you can make your changes locally.
@@ -73,16 +73,16 @@ Ready to contribute? Here's how to set up `smsdrop-python` for local development
 6. When you're done making changes, check that your changes pass the
    tests, including testing other Python versions, with tox:
 
-```
-    $ tox
+```shell
+$ tox
 ```
 
 7. Commit your changes and push your branch to GitHub:
 
-```
-    $ git add .
-    $ git commit -m "Your detailed description of your changes."
-    $ git push origin name-of-your-bugfix-or-feature
+```shell
+$ git add .
+$ git commit -m "Your detailed description of your changes."
+$ git push origin name-of-your-bugfix-or-feature
 ```
 
 8. Submit a pull request through the GitHub website.
@@ -101,8 +101,8 @@ Before you submit a pull request, check that it meets these guidelines:
 
 ## Tips
 
-```
-    $ pytest tests.test_smsdrop_python
+```shell
+$ pytest tests.test_smsdrop_python
 ```
 
 To run a subset of tests.
@@ -114,7 +114,7 @@ A reminder for the maintainers on how to deploy.
 Make sure all your changes are committed (including an entry in HISTORY.md).
 Then run:
 
-```
+```shell
 $ poetry patch # possible: major / minor / patch
 $ git push
 $ git push --tags

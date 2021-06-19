@@ -7,7 +7,8 @@ from dotenv import dotenv_values
 
 from smsdrop import Campaign, Client, Redis
 
-# activate logging
+# Enable Debug Logging
+# This will og the API request and response data to the console:
 logging.basicConfig(level=logging.DEBUG, format="%(message)s")
 
 config = dotenv_values(".env")
@@ -28,7 +29,7 @@ def main():
     print(client.read_campaigns(skip=0, limit=500))
 
     # Send a simple sms
-    client.send_sms(message="hi", sender="Max", phone="<phone>")
+    client.send_message(message="hi", sender="Max", phone="<phone>")
 
     # Create a new Campaign
     cp = Campaign(
@@ -43,17 +44,20 @@ def main():
     print(cp.status)  # Output Example : COMPLETED
 
     # create a scheduled campaign
-    dispatch_date = datetime.datetime(2021, 12, 12)
-    aware_dispatch_date = pytz.timezone(MY_TIMEZONE).localize(dispatch_date)
+    naive_dispatch_date = datetime.datetime.now() + datetime.timedelta(hours=1)
+    aware_dispatch_date = pytz.timezone(MY_TIMEZONE).localize(
+        naive_dispatch_date
+    )
     cp2 = Campaign(
         title="Test Campaign 2",
         message="Test campaign content 2",
         sender="TestUser",
         recipient_list=["<phone1>", "<phone2>", "<phone3>"],
+        # The date will automatically be send in isoformat with the timezone data
         defer_until=aware_dispatch_date,
     )
     client.launch_campaign(cp2)
-    # You can check for the status at the end of the end ;)
+    # If you check the status one hour from now it should return 'COMPLETED'
 
     # create another scheduled campaign using defer_by
     cp2 = Campaign(

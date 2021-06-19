@@ -4,13 +4,13 @@ site_description: The official python sdk for the smsdrop.net api.
 site_url: https://tobi-de.github.io/smsdrop-python/
 repo_name: smsdrop-python
 nav:
-  - home: index.md
-  - installation: installation.md
-  - usage: usage.md
-  - reference: reference.md
-  - contributing: contributing.md
-  - authors: authors.md
-  - history: history.md
+  - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - Reference: reference.md
+  - Contributing: contributing.md
+  - Authors: authors.md
+  - History: history.md
 theme:
   name: material
   language: en
@@ -57,6 +57,14 @@ plugins:
   - search:
       lang: en
   - mkdocstrings:
+      handlers:
+        python:
+          selection:
+            docstring_style: "restructured-text"
+          rendering:
+            show_source: no
+            show_object_full_path: no
+            show_root_heading: yes
       watch:
         - smsdrop-python
 extra:

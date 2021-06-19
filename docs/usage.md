@@ -1,7 +1,7 @@
 # Usage
 
-To use {{ cookiecutter.project_name }} in a project
+To use smsdrop-python in a project
 
-```
-    import {{ cookiecutter.project_slug }}
+```python
+import smsdrop
 ```
