@@ -101,7 +101,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              home
+              Home
             
           </span>
         </div>
@@ -237,12 +237,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          home
+          Home
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="." class="md-nav__link md-nav__link--active">
-        home
+        Home
       </a>
       
         
@@ -266,8 +266,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#usageexamples" class="md-nav__link">
-    Usage/Examples
+  <a href="#quickstart" class="md-nav__link">
+    Quickstart
   </a>
   
 </li>
@@ -294,7 +294,7 @@
   
     <li class="md-nav__item">
       <a href="installation/" class="md-nav__link">
-        installation
+        Installation
       </a>
     </li>
   
@@ -309,7 +309,7 @@
   
     <li class="md-nav__item">
       <a href="usage/" class="md-nav__link">
-        usage
+        Usage
       </a>
     </li>
   
@@ -324,7 +324,7 @@
   
     <li class="md-nav__item">
       <a href="reference/" class="md-nav__link">
-        reference
+        Reference
       </a>
     </li>
   
@@ -339,7 +339,7 @@
   
     <li class="md-nav__item">
       <a href="contributing/" class="md-nav__link">
-        contributing
+        Contributing
       </a>
     </li>
   
@@ -354,7 +354,7 @@
   
     <li class="md-nav__item">
       <a href="authors/" class="md-nav__link">
-        authors
+        Authors
       </a>
     </li>
   
@@ -369,7 +369,7 @@
   
     <li class="md-nav__item">
       <a href="history/" class="md-nav__link">
-        history
+        History
       </a>
     </li>
   
@@ -407,8 +407,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#usageexamples" class="md-nav__link">
-    Usage/Examples
+  <a href="#quickstart" class="md-nav__link">
+    Quickstart
   </a>
   
 </li>
@@ -435,17 +435,18 @@
                   </a>
                 
                 
-                  <h1>home</h1>
+                  <h1>Home</h1>
                 
                 <!-- BEGIN INCLUDE ../README.md   -->
 <h2 id="smsdrop-python">Smsdrop-Python<a class="headerlink" href="#smsdrop-python" title="Permanent link">&para;</a></h2>
 <p><a href="https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs"><img alt="MIT License" src="https://img.shields.io/apm/l/atomic-design-ui.svg?" /></a>
 <a href="https://pypi.python.org/pypi/smsdrop-python"><img alt="" src="https://img.shields.io/pypi/v/smsdrop-python.svg" /></a></p>
 <ul>
-<li>Documentation: https://tobi-de.github.io/smsdrop-python/</li>
+<li>Documentation: <a href="https://tobi-de.github.io/smsdrop-python/" target="_blank">https://tobi-de.github.io/smsdrop-python/</a></li>
+<li>Source Code: <a href="https://github.com/Tobi-De/smsdrop-python/" target="_blank">https://github.com/Tobi-De/smsdrop-python/</a></li>
 </ul>
 <p>The official python sdk for the <a href="https://smsdrop.net/..">smsdrop</a> api.</p>
-<h3 id="usageexamples">Usage/Examples<a class="headerlink" href="#usageexamples" title="Permanent link">&para;</a></h3>
+<h3 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h3>
 <table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -485,21 +486,68 @@
 <span class="normal">37</span>
 <span class="normal">38</span>
 <span class="normal">39</span>
-<span class="normal">40</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">time</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">time</span>
 
+<span class="kn">import</span> <span class="nn">pytz</span>
 <span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">dotenv_values</span>
 
-<span class="kn">from</span> <span class="nn">smsdrop</span> <span class="kn">import</span> <span class="n">Client</span><span class="p">,</span> <span class="n">Campaign</span>
+<span class="kn">from</span> <span class="nn">smsdrop</span> <span class="kn">import</span> <span class="n">Campaign</span><span class="p">,</span> <span class="n">Client</span><span class="p">,</span> <span class="n">Redis</span>
+
+<span class="c1"># Enable Debug Logging</span>
+<span class="c1"># This will og the API request and response data to the console:</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="n">config</span> <span class="o">=</span> <span class="n">dotenv_values</span><span class="p">(</span><span class="s2">&quot;.env&quot;</span><span class="p">)</span>
 
 <span class="n">TEST_EMAIL</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TEST_EMAIL&quot;</span><span class="p">)</span>
 <span class="n">TEST_PASSWORD</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TEST_PASSWORD&quot;</span><span class="p">)</span>
+<span class="n">MY_TIMEZONE</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MY_TIMEZONE&quot;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="c1"># Initialize the client</span>
-    <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="n">TEST_EMAIL</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">TEST_PASSWORD</span><span class="p">)</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="n">TEST_EMAIL</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">TEST_PASSWORD</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">Redis</span><span class="p">())</span>
     <span class="c1"># Get your account profile informations</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">read_me</span><span class="p">())</span>
     <span class="c1"># Get your subscription informations</span>
@@ -508,7 +556,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">read_campaigns</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">500</span><span class="p">))</span>
 
     <span class="c1"># Send a simple sms</span>
-    <span class="n">client</span><span class="o">.</span><span class="n">send_sms</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="s2">&quot;hi&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="s2">&quot;Max&quot;</span><span class="p">,</span> <span class="n">phone</span><span class="o">=</span><span class="s2">&quot;&lt;phone&gt;&quot;</span><span class="p">)</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="s2">&quot;hi&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="s2">&quot;Max&quot;</span><span class="p">,</span> <span class="n">phone</span><span class="o">=</span><span class="s2">&quot;&lt;phone&gt;&quot;</span><span class="p">)</span>
 
     <span class="c1"># Create a new Campaign</span>
     <span class="n">cp</span> <span class="o">=</span> <span class="n">Campaign</span><span class="p">(</span>
@@ -521,6 +569,37 @@
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>  <span class="c1"># wait for 20 seconds for the campaign to proceed</span>
     <span class="n">client</span><span class="o">.</span><span class="n">refresh_campaign</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>  <span class="c1"># refresh your campaign data</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>  <span class="c1"># Output Example : COMPLETED</span>
+
+    <span class="c1"># create a scheduled campaign</span>
+    <span class="n">naive_dispatch_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">aware_dispatch_date</span> <span class="o">=</span> <span class="n">pytz</span><span class="o">.</span><span class="n">timezone</span><span class="p">(</span><span class="n">MY_TIMEZONE</span><span class="p">)</span><span class="o">.</span><span class="n">localize</span><span class="p">(</span>
+        <span class="n">naive_dispatch_date</span>
+    <span class="p">)</span>
+    <span class="n">cp2</span> <span class="o">=</span> <span class="n">Campaign</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Test Campaign 2&quot;</span><span class="p">,</span>
+        <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Test campaign content 2&quot;</span><span class="p">,</span>
+        <span class="n">sender</span><span class="o">=</span><span class="s2">&quot;TestUser&quot;</span><span class="p">,</span>
+        <span class="n">recipient_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;&lt;phone1&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;phone2&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;phone3&gt;&quot;</span><span class="p">],</span>
+        <span class="c1"># The date will automatically be send in isoformat with the timezone data</span>
+        <span class="n">defer_until</span><span class="o">=</span><span class="n">aware_dispatch_date</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">launch_campaign</span><span class="p">(</span><span class="n">cp2</span><span class="p">)</span>
+    <span class="c1"># If you check the status one hour from now it should return &#39;COMPLETED&#39;</span>
+
+    <span class="c1"># create another scheduled campaign using defer_by</span>
+    <span class="n">cp2</span> <span class="o">=</span> <span class="n">Campaign</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Test Campaign 3&quot;</span><span class="p">,</span>
+        <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Test campaign content 3&quot;</span><span class="p">,</span>
+        <span class="n">sender</span><span class="o">=</span><span class="s2">&quot;TestUser&quot;</span><span class="p">,</span>
+        <span class="n">recipient_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;&lt;phone1&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;phone2&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;phone3&gt;&quot;</span><span class="p">],</span>
+        <span class="n">defer_by</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">launch_campaign</span><span class="p">(</span><span class="n">cp2</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>  <span class="c1"># wait for 120 seconds for the campaign to proceed</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">refresh_campaign</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>  <span class="c1"># refresh your campaign data</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>  <span class="c1"># should output : COMPLETED</span>
+    <span class="c1"># If you get a &#39;SCHEDULED&#39; printed, you can wait 10 more seconds in case the network</span>
+    <span class="c1"># is a little slow or the server is a busy</span>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
@@ -548,13 +627,13 @@
       
       
         
-        <a href="installation/" class="md-footer__link md-footer__link--next" aria-label="Next: installation" rel="next">
+        <a href="installation/" class="md-footer__link md-footer__link--next" aria-label="Next: Installation" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              installation
+              Installation
             </div>
           </div>
           <div class="md-footer__button md-icon">
