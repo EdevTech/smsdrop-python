@@ -346,13 +346,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#smsdrop.smsdrop.Client.refresh_campaign" class="md-nav__link">
-    refresh_campaign()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#smsdrop.smsdrop.Client.retry_campaign" class="md-nav__link">
     retry_campaign()
   </a>
@@ -372,63 +365,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#smsdrop.models.Campaign" class="md-nav__link">
-    Campaign
-  </a>
-  
-    <nav class="md-nav" aria-label="Campaign">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#smsdrop.models.Campaign.as_dict" class="md-nav__link">
-    as_dict()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#smsdrop.models.Campaign.from_dict" class="md-nav__link">
-    from_dict()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#smsdrop.models.Campaign.update" class="md-nav__link">
-    update()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#smsdrop.storages.Redis" class="md-nav__link">
-    Redis
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#smsdrop.models.User" class="md-nav__link">
-    User
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#smsdrop.models.Subscription" class="md-nav__link">
-    Subscription
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#smsdrop.utils.make_recipient_list" class="md-nav__link">
-    make_recipient_list()
+  <a href="#smsdrop.models.CampaignCreate" class="md-nav__link">
+    CampaignCreate
   </a>
   
 </li>
@@ -553,13 +491,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#smsdrop.smsdrop.Client.refresh_campaign" class="md-nav__link">
-    refresh_campaign()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#smsdrop.smsdrop.Client.retry_campaign" class="md-nav__link">
     retry_campaign()
   </a>
@@ -579,63 +510,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#smsdrop.models.Campaign" class="md-nav__link">
-    Campaign
-  </a>
-  
-    <nav class="md-nav" aria-label="Campaign">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#smsdrop.models.Campaign.as_dict" class="md-nav__link">
-    as_dict()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#smsdrop.models.Campaign.from_dict" class="md-nav__link">
-    from_dict()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#smsdrop.models.Campaign.update" class="md-nav__link">
-    update()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#smsdrop.storages.Redis" class="md-nav__link">
-    Redis
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#smsdrop.models.User" class="md-nav__link">
-    User
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#smsdrop.models.Subscription" class="md-nav__link">
-    Subscription
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#smsdrop.utils.make_recipient_list" class="md-nav__link">
-    make_recipient_list()
+  <a href="#smsdrop.models.CampaignCreate" class="md-nav__link">
+    CampaignCreate
   </a>
   
 </li>
@@ -691,13 +567,19 @@
       <tr>
         <td><code>email</code></td>
         <td><code>str</code></td>
-        <td><p>The email address of your smsdrop api account</p></td>
+        <td><p>The email address of your smsdrop account, defaults to [None]</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>password</code></td>
         <td><code>str</code></td>
-        <td><p>Your account password, default to 1</p></td>
+        <td><p>Your smsdrop account password</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>context</code></td>
+        <td><code>Optional[str]</code></td>
+        <td><p>Root url of the api</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -707,9 +589,9 @@
         <td><em>required</em></td>
       </tr>
       <tr>
-        <td><code>context</code></td>
-        <td><code>Optional[str]</code></td>
-        <td><p>Root url of the api, defaults to None</p></td>
+        <td><code>logger</code></td>
+        <td><code>Optioanl[logging.Logger]</code></td>
+        <td><p>A logger instance with your own config</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -750,6 +632,10 @@
 
 
 
+
+
+
+
   <div class="doc doc-object doc-method">
 
 
@@ -763,7 +649,7 @@
     <div class="doc doc-contents ">
 
       <p>Send a request to the api to launch a new campaign from the
-<code>smsdrop.Campaign</code> instance provided</p>
+<code>smsdrop.CampaignIn</code> instance provided</p>
 <p>Note that the campaign is always created even if an exception is raised,
 the instance your provide is updated with the response from the api.
 For example <code>campaign.id</code> will always be available even the campaign is
@@ -783,8 +669,8 @@ you can use <code>client.retry(campaign.id)</code> to retry after you</p>
   <tbody>
       <tr>
         <td><code>campaign</code></td>
-        <td><code>Campaign</code></td>
-        <td><p>An instance of the class <code>smsdrop.Campaign</code></p></td>
+        <td><code>CampaignCreate</code></td>
+        <td><p>An instance of the class <code>smsdrop.CampaignIn</code></p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -862,7 +748,7 @@ you can use <code>client.retry(campaign.id)</code> to retry after you</p>
   <tbody>
     <tr>
       <td><code>Optional[smsdrop.models.Campaign]</code></td>
-      <td><p>An instance of <code>smsdrop.Campaign</code></p></td>
+      <td><p>An instance of <code>smsdrop.CampaignIn</code></p></td>
     </tr>
   </tbody>
 </table>
@@ -1036,64 +922,6 @@ you can use <code>client.retry(campaign.id)</code> to retry after you</p>
 
 
 
-<h3 id="smsdrop.smsdrop.Client.refresh_campaign" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">refresh_campaign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">campaign</span><span class="p">)</span></code>
-
-
-<a href="#smsdrop.smsdrop.Client.refresh_campaign" class="headerlink" title="Permanent link">&para;</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Refresh your campaign data from the api.</p>
-
-<p><strong>Parameters:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Default</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>campaign</code></td>
-        <td><code>Campaign</code></td>
-        <td><p>An instance of the class <code>smsdrop.Campaign</code></p></td>
-        <td><em>required</em></td>
-      </tr>
-  </tbody>
-</table>
-<p><strong>Exceptions:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>AssertionError</code></td>
-        <td><p>If the campaign you provided was not launched using <code>client.launch_campaign</code></p></td>
-      </tr>
-      <tr>
-        <td><code>ServerError</code></td>
-        <td><p>If the server if failing for some obscure reasons</p></td>
-      </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
 <h3 id="smsdrop.smsdrop.Client.retry_campaign" class="doc doc-heading">
 <code class="highlight language-python"><span class="n">retry_campaign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span></code>
 
@@ -1230,6 +1058,10 @@ internally it work exactly as a campaign and create a new campaign.</p>
         <td><code>ServerError</code></td>
         <td><p>If the server if failing for some obscure reasons</p></td>
       </tr>
+      <tr>
+        <td><code>InsufficientSmsError</code></td>
+        <td><p>If the number of sms available on your account is insufficient to send the message</p></td>
+      </tr>
   </tbody>
 </table>
     </div>
@@ -1252,19 +1084,19 @@ internally it work exactly as a campaign and create a new campaign.</p>
 
 
 
-<h2 id="smsdrop.models.Campaign" class="doc doc-heading">
-        <code>smsdrop.models.Campaign</code>
+<h2 id="smsdrop.models.CampaignCreate" class="doc doc-heading">
+        <code>smsdrop.models.CampaignCreate</code>
 
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-dataclass"><code>dataclass</code></small>
   </span>
 
-<a href="#smsdrop.models.Campaign" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#smsdrop.models.CampaignCreate" class="headerlink" title="Permanent link">&para;</a></h2>
 
     <div class="doc doc-contents first">
 
-      <p>Represent a campaign</p>
+      <p>Data class use to create a new campaign.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -1350,132 +1182,6 @@ internally it work exactly as a campaign and create a new campaign.</p>
 
 
 
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="smsdrop.models.Campaign.as_dict" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">only</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
-
-
-<a href="#smsdrop.models.Campaign.as_dict" class="headerlink" title="Permanent link">&para;</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Return a dict equivalent of your campaign</p>
-
-<p><strong>Parameters:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Default</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>strip</code></td>
-        <td><code>Optional[list]</code></td>
-        <td><p>The fields that should be strip out</p></td>
-        <td><code>None</code></td>
-      </tr>
-      <tr>
-        <td><code>only</code></td>
-        <td><code>Optional[list]</code></td>
-        <td><p>The fields that should be received  Note that you can only set one of the parameters, not both</p></td>
-        <td><code>None</code></td>
-      </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="smsdrop.models.Campaign.from_dict" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-classmethod"><code>classmethod</code></small>
-  </span>
-
-<a href="#smsdrop.models.Campaign.from_dict" class="headerlink" title="Permanent link">&para;</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Create a new instance from a dictionary</p>
-
-<p><strong>Parameters:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Default</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>data</code></td>
-        <td><code>dict</code></td>
-        <td><p>The dictionary containing the data</p></td>
-        <td><em>required</em></td>
-      </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-method">
-
-
-
-<h3 id="smsdrop.models.Campaign.update" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></code>
-
-
-<a href="#smsdrop.models.Campaign.update" class="headerlink" title="Permanent link">&para;</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Update the campaign with the data from the dictionnary</p>
-
-<p><strong>Parameters:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Default</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>data</code></td>
-        <td><code>dict</code></td>
-        <td><p>The dictionary containing the data</p></td>
-        <td><em>required</em></td>
-      </tr>
-  </tbody>
-</table>
-    </div>
-
-  </div>
-
-
-
 
 
   </div>
@@ -1487,176 +1193,6 @@ internally it work exactly as a campaign and create a new campaign.</p>
 <p>When you create an instance of this class, the only validation that is made is to check if you
 set both <code>defer_by</code> and <code>defer_until</code> which is not allowed. You campaign data is really only validate
 when the request is made to the check, so be sure to sanitize your data.</p>
-
-
-  <div class="doc doc-object doc-class">
-
-
-
-<h2 id="smsdrop.storages.Redis" class="doc doc-heading">
-        <code>smsdrop.storages.Redis</code>
-
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass"><code>dataclass</code></small>
-  </span>
-
-<a href="#smsdrop.storages.Redis" class="headerlink" title="Permanent link">&para;</a></h2>
-
-    <div class="doc doc-contents first">
-
-      <p>Redis(host: str = 'localhost', port: int = 6379, db: int = 0, username: Union[str, NoneType] = None, password: Union[str, NoneType] = None)</p>
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-class">
-
-
-
-<h2 id="smsdrop.models.User" class="doc doc-heading">
-        <code>smsdrop.models.User</code>
-
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass"><code>dataclass</code></small>
-  </span>
-
-<a href="#smsdrop.models.User" class="headerlink" title="Permanent link">&para;</a></h2>
-
-    <div class="doc doc-contents first">
-
-      <p>Base user class</p>
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-class">
-
-
-
-<h2 id="smsdrop.models.Subscription" class="doc doc-heading">
-        <code>smsdrop.models.Subscription</code>
-
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass"><code>dataclass</code></small>
-  </span>
-
-<a href="#smsdrop.models.Subscription" class="headerlink" title="Permanent link">&para;</a></h2>
-
-    <div class="doc doc-contents first">
-
-      <p>Base subscription class</p>
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-function">
-
-
-
-<h2 id="smsdrop.utils.make_recipient_list" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">smsdrop</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">make_recipient_list</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></code>
-
-
-<a href="#smsdrop.utils.make_recipient_list" class="headerlink" title="Permanent link">&para;</a></h2>
-
-    <div class="doc doc-contents first">
-
-
-    </div>
-
-  </div>
                 
               
               

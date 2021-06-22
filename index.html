@@ -525,14 +525,16 @@
 <span class="normal">76</span>
 <span class="normal">77</span>
 <span class="normal">78</span>
-<span class="normal">79</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">time</span>
 
 <span class="kn">import</span> <span class="nn">pytz</span>
 <span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">dotenv_values</span>
 
-<span class="kn">from</span> <span class="nn">smsdrop</span> <span class="kn">import</span> <span class="n">Campaign</span><span class="p">,</span> <span class="n">Client</span><span class="p">,</span> <span class="n">Redis</span>
+<span class="kn">from</span> <span class="nn">smsdrop</span> <span class="kn">import</span> <span class="n">CampaignCreate</span><span class="p">,</span> <span class="n">Client</span><span class="p">,</span> <span class="n">RedisStorage</span>
 
 <span class="c1"># Enable Debug Logging</span>
 <span class="c1"># This will og the API request and response data to the console:</span>
@@ -547,7 +549,9 @@
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="c1"># Initialize the client</span>
-    <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="n">TEST_EMAIL</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">TEST_PASSWORD</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">Redis</span><span class="p">())</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span>
+        <span class="n">email</span><span class="o">=</span><span class="n">TEST_EMAIL</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">TEST_PASSWORD</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">RedisStorage</span><span class="p">()</span>
+    <span class="p">)</span>
     <span class="c1"># Get your account profile informations</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">read_me</span><span class="p">())</span>
     <span class="c1"># Get your subscription informations</span>
@@ -559,15 +563,15 @@
     <span class="n">client</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="s2">&quot;hi&quot;</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="s2">&quot;Max&quot;</span><span class="p">,</span> <span class="n">phone</span><span class="o">=</span><span class="s2">&quot;&lt;phone&gt;&quot;</span><span class="p">)</span>
 
     <span class="c1"># Create a new Campaign</span>
-    <span class="n">cp</span> <span class="o">=</span> <span class="n">Campaign</span><span class="p">(</span>
+    <span class="n">cp</span> <span class="o">=</span> <span class="n">CampaignCreate</span><span class="p">(</span>
         <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Test Campaign&quot;</span><span class="p">,</span>
         <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Test campaign content&quot;</span><span class="p">,</span>
         <span class="n">sender</span><span class="o">=</span><span class="s2">&quot;TestUser&quot;</span><span class="p">,</span>
         <span class="n">recipient_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;&lt;phone1&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;phone2&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;phone3&gt;&quot;</span><span class="p">],</span>
     <span class="p">)</span>
-    <span class="n">client</span><span class="o">.</span><span class="n">launch_campaign</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
+    <span class="n">cp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">launch_campaign</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>  <span class="c1"># wait for 20 seconds for the campaign to proceed</span>
-    <span class="n">client</span><span class="o">.</span><span class="n">refresh_campaign</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>  <span class="c1"># refresh your campaign data</span>
+    <span class="n">cp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">read_campaign</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>  <span class="c1"># refresh your campaign data</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>  <span class="c1"># Output Example : COMPLETED</span>
 
     <span class="c1"># create a scheduled campaign</span>
@@ -575,7 +579,7 @@
     <span class="n">aware_dispatch_date</span> <span class="o">=</span> <span class="n">pytz</span><span class="o">.</span><span class="n">timezone</span><span class="p">(</span><span class="n">MY_TIMEZONE</span><span class="p">)</span><span class="o">.</span><span class="n">localize</span><span class="p">(</span>
         <span class="n">naive_dispatch_date</span>
     <span class="p">)</span>
-    <span class="n">cp2</span> <span class="o">=</span> <span class="n">Campaign</span><span class="p">(</span>
+    <span class="n">cp2</span> <span class="o">=</span> <span class="n">CampaignCreate</span><span class="p">(</span>
         <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Test Campaign 2&quot;</span><span class="p">,</span>
         <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Test campaign content 2&quot;</span><span class="p">,</span>
         <span class="n">sender</span><span class="o">=</span><span class="s2">&quot;TestUser&quot;</span><span class="p">,</span>
@@ -583,23 +587,23 @@
         <span class="c1"># The date will automatically be send in isoformat with the timezone data</span>
         <span class="n">defer_until</span><span class="o">=</span><span class="n">aware_dispatch_date</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">client</span><span class="o">.</span><span class="n">launch_campaign</span><span class="p">(</span><span class="n">cp2</span><span class="p">)</span>
+    <span class="n">cp2</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">launch_campaign</span><span class="p">(</span><span class="n">cp2</span><span class="p">)</span>
     <span class="c1"># If you check the status one hour from now it should return &#39;COMPLETED&#39;</span>
 
     <span class="c1"># create another scheduled campaign using defer_by</span>
-    <span class="n">cp2</span> <span class="o">=</span> <span class="n">Campaign</span><span class="p">(</span>
+    <span class="n">cp3</span> <span class="o">=</span> <span class="n">CampaignCreate</span><span class="p">(</span>
         <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Test Campaign 3&quot;</span><span class="p">,</span>
         <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Test campaign content 3&quot;</span><span class="p">,</span>
         <span class="n">sender</span><span class="o">=</span><span class="s2">&quot;TestUser&quot;</span><span class="p">,</span>
         <span class="n">recipient_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;&lt;phone1&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;phone2&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;phone3&gt;&quot;</span><span class="p">],</span>
         <span class="n">defer_by</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">client</span><span class="o">.</span><span class="n">launch_campaign</span><span class="p">(</span><span class="n">cp2</span><span class="p">)</span>
+    <span class="n">cp3</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">launch_campaign</span><span class="p">(</span><span class="n">cp3</span><span class="p">)</span>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>  <span class="c1"># wait for 120 seconds for the campaign to proceed</span>
-    <span class="n">client</span><span class="o">.</span><span class="n">refresh_campaign</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>  <span class="c1"># refresh your campaign data</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>  <span class="c1"># should output : COMPLETED</span>
+    <span class="n">cp3</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">read_campaign</span><span class="p">(</span><span class="n">cp3</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>  <span class="c1"># refresh your campaign data</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">cp3</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>  <span class="c1"># should output : COMPLETED</span>
     <span class="c1"># If you get a &#39;SCHEDULED&#39; printed, you can wait 10 more seconds in case the network</span>
-    <span class="c1"># is a little slow or the server is a busy</span>
+    <span class="c1"># is a little slow or the server is busy</span>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
