@@ -8,6 +8,21 @@ from typing import Optional
 @dataclass
 class BaseStorage(metaclass=ABCMeta):
     @abstractmethod
+    def get(self, key, **kwargs):
+        pass
+
+    @abstractmethod
+    def set(self, key, value, expires, **kwargs):
+        pass
+
+    @abstractmethod
+    def delete(self, key, **kwargs):
+        pass
+
+
+@dataclass
+class DummyStorage(BaseStorage):
+    @abstractmethod
     def get(self, *args, **kwargs):
         pass
 
@@ -16,38 +31,26 @@ class BaseStorage(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def delete(self, *args, **kwargs):
+    def delete(self, key, **kwargs):
         pass
 
 
 @dataclass
-class Dummy(BaseStorage):
-    def get(self, *args, **kwargs):
-        pass
-
-    def set(self, *args, **kwargs):
-        pass
-
-    def delete(self, *args, **kwargs):
-        pass
-
-
-@dataclass
-class SimpleDict(BaseStorage):
+class DictStorage(BaseStorage):
     data: dict = field(default_factory=dict)
 
-    def get(self, key):
+    def get(self, key, **_):
         return self.data.get(key, None)
 
-    def set(self, key, value):
+    def set(self, key, value, **kwargs):
         self.data[key] = value
 
-    def delete(self, key):
+    def delete(self, key, **_):
         self.data.pop(key)
 
 
 @dataclass
-class Redis(BaseStorage):
+class RedisStorage(BaseStorage):
     host: str = "localhost"
     port: int = 6379
     db: int = 0
@@ -57,11 +60,11 @@ class Redis(BaseStorage):
     def __post_init__(self):
         self._client = redis.Redis(**asdict(self), decode_responses=True)
 
-    def get(self, key):
+    def get(self, key, **_):
         return self._client.get(key)
 
-    def set(self, key, value, ex: int):
-        self._client.set(name=key, value=value, ex=ex)
+    def set(self, key, value, expires: int, **_):
+        self._client.set(name=key, value=value, ex=expires)
 
-    def delete(self, key):
+    def delete(self, key, **_):
         self._client.delete(key)

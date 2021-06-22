@@ -6,9 +6,9 @@ from .exceptions import (
     ServerError,
     ValidationError,
 )
-from .models import Campaign, MessageType, ShipmentState, Subscription, User
+from .models import CampaignCreate, MessageType, Subscription, User
 from .smsdrop import Client
-from .storages import BaseStorage, Dummy, Redis, SimpleDict
+from .storages import BaseStorage, DictStorage, DummyStorage, RedisStorage
 from .utils import make_recipient_list
 
 __author__ = """Tobi DEGNON"""

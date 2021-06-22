@@ -7,7 +7,9 @@ class ServerError(Exception):
 
 
 class InsufficientSmsError(Exception):
-    pass
+    def __init__(self, id, *args):
+        self.id = id
+        super().__init__(*args)
 
 
 class ValidationError(Exception):

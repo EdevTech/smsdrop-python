@@ -18,7 +18,7 @@ import time
 import pytz
 from dotenv import dotenv_values
 
-from smsdrop import Campaign, Client, Redis
+from smsdrop import CampaignIn, Client, RedisStorage
 
 # Enable Debug Logging
 # This will og the API request and response data to the console:
@@ -33,7 +33,9 @@ MY_TIMEZONE = config.get("MY_TIMEZONE")
 
 def main():
     # Initialize the client
-    client = Client(email=TEST_EMAIL, password=TEST_PASSWORD, storage=Redis())
+    client = Client(
+        email=TEST_EMAIL, password=TEST_PASSWORD, storage=RedisStorage()
+    )
     # Get your account profile informations
     print(client.read_me())
     # Get your subscription informations
@@ -44,9 +46,9 @@ def main():
     # Send a simple sms
     client.send_message(message="hi", sender="Max", phone="<phone>")
 
-    # Create a new Campaign
-    cp = Campaign(
-        title="Test Campaign",
+    # Create a new CampaignIn
+    cp = CampaignIn(
+        title="Test CampaignIn",
         message="Test campaign content",
         sender="TestUser",
         recipient_list=["<phone1>", "<phone2>", "<phone3>"],
@@ -61,8 +63,8 @@ def main():
     aware_dispatch_date = pytz.timezone(MY_TIMEZONE).localize(
         naive_dispatch_date
     )
-    cp2 = Campaign(
-        title="Test Campaign 2",
+    cp2 = CampaignIn(
+        title="Test CampaignIn 2",
         message="Test campaign content 2",
         sender="TestUser",
         recipient_list=["<phone1>", "<phone2>", "<phone3>"],
@@ -73,8 +75,8 @@ def main():
     # If you check the status one hour from now it should return 'COMPLETED'
 
     # create another scheduled campaign using defer_by
-    cp2 = Campaign(
-        title="Test Campaign 3",
+    cp2 = CampaignIn(
+        title="Test CampaignIn 3",
         message="Test campaign content 3",
         sender="TestUser",
         recipient_list=["<phone1>", "<phone2>", "<phone3>"],

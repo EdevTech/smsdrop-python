@@ -1,9 +1,8 @@
 import datetime
-import json
 import logging
 
 import httpx
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, field
 from httpx import Request, Response, codes
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from typing import List, Optional
@@ -24,40 +23,31 @@ from .exceptions import (
     ServerError,
     ValidationError,
 )
-from .helpers import get_json_response, log_request_error
-from .models import Campaign, Subscription, User, campaign_public_fields
-from .storages import BaseStorage, SimpleDict
+from .helpers import (
+    cast_message_type,
+    get_json_response,
+    log_request,
+    log_request_error,
+    log_response,
+    sanitize_payload,
+)
+from .models import Campaign, CampaignCreate, Subscription, User
+from .storages import BaseStorage, DictStorage
 
 _logger = logging.getLogger(__name__)
 
 
-def log_request(request: Request):
-    json_content = (
-        json.loads(request.content) if request.method == "POST" else {}
-    )
-    _logger.debug(
-        f"Request: {request.method} {request.url} - Waiting for response\n"
-        f"Content: \n {json.dumps(json_content, indent=2, sort_keys=True)}"
-    )
-
-
-def log_response(response: Response):
-    request = response.request
-    _logger.debug(
-        f"Response: {request.method} {request.url} - Status {response.status_code}\n"
-        f"Content : \n {json.dumps(response.json(), indent=2, sort_keys=True)}"
-    )
-
-
-@dataclass
+@dataclass(frozen=True)
 class Client:
     """Main module class that make the requests to the smsdrop api.
 
     :param str email: The email address of your smsdrop api account
     :param str password: Your account password, default to 1
+    :param Optional[str] context: Root url of the api, defaults to None
     :param Optional[BaseStorage] storage: A storage object that will be use
     to store the api token
-    :param Optional[str] context: Root url of the api, defaults to None
+    :param logging.Logger logger: A logger instance with your own config if you
+    want to
     :raises BadCredentialsError: If the password or/and email your provided
     are incorrect
     """
@@ -65,15 +55,25 @@ class Client:
     email: str
     password: str
     context: str = BASE_URL
-    storage: BaseStorage = SimpleDict()
+    storage: BaseStorage = DictStorage()
+    logger: logging.Logger = _logger
+    _http_client: httpx.Client = field(
+        default=httpx.Client(base_url=context, timeout=15), init=False
+    )
 
     def __post_init__(self):
-        self.logger = _logger
-        self._http_client = httpx.Client(base_url=self.context)
         self._refresh_token()
+
+        # setup event hooks
+        def log_req(request: Request):
+            log_request(request, self.logger)
+
+        def log_resp(response: Response):
+            log_response(response, self.logger)
+
         self._http_client.event_hooks = {
-            "request": [log_request],
-            "response": [log_response],
+            "request": [log_req],
+            "response": [log_resp],
         }
 
     def _refresh_token(self):
@@ -90,7 +90,9 @@ class Client:
         return self.storage.get(self._token_storage_key)
 
     def _set_token(self, new_token):
-        self.storage.set(self._token_storage_key, new_token, ex=TOKEN_LIFETIME)
+        self.storage.set(
+            self._token_storage_key, new_token, expires=TOKEN_LIFETIME
+        )
 
     @log_request_error
     def _login(self) -> str:
@@ -120,7 +122,7 @@ class Client:
         if payload:
             kwargs.update(
                 {
-                    "json": payload,
+                    "json": sanitize_payload(payload),
                     "headers": {"content-type": "application/json"},
                 }
             )
@@ -142,7 +144,7 @@ class Client:
         sender: str,
         phone: str,
         dispatch_date: Optional[datetime.datetime] = None,
-    ):
+    ) -> Campaign:
         """Send a simple message to a single recipient.
 
         This is just a convenient helper to send sms to a unique recipient,
@@ -156,20 +158,21 @@ class Client:
         :rtype: Campaign
         :raises ValidationError: if some of the data you provided are not valid
         :raises ServerError: If the server if failing for some obscure reasons
+        :raises InsufficientSmsError: If the number of sms available on your account is
+        insufficient to send the message
         """
 
-        cp = Campaign(
+        cp = CampaignCreate(
             message=message,
             sender=sender,
             recipient_list=[phone],
             defer_until=dispatch_date,
         )
-        self.launch_campaign(cp)
-        return cp
+        return self.launch_campaign(cp)
 
-    def launch_campaign(self, campaign: Campaign):
+    def launch_campaign(self, campaign: CampaignCreate) -> Campaign:
         """Send a request to the api to launch a new campaign from the
-        `smsdrop.Campaign` instance provided
+        `smsdrop.CampaignIn` instance provided
 
         Note that the campaign is always created even if an exception is raised,
         the instance your provide is updated with the response from the api.
@@ -177,37 +180,23 @@ class Client:
         not launched, it is always created except if there are some validation errors,
         you can use `client.retry(campaign.id)` to retry after you
 
-        :param campaign: An instance of the class `smsdrop.Campaign`
+        :param campaign: An instance of the class `smsdrop.CampaignIn`
         :raises InsufficientSmsError: If the number of sms available on your account is
         insufficient to launch the campaign
         :raises ValidationError: if the campaign data you provided is not valid
         :raises ServerError: If the server if failing for some obscure reasons
         """
 
-        payload = campaign.as_dict(only=campaign_public_fields)
-        response = self._send_request(path=CAMPAIGN_BASE_PATH, payload=payload)
+        response = self._send_request(
+            path=CAMPAIGN_BASE_PATH, payload=asdict(campaign)
+        )
         content = get_json_response(response)
         if response.status_code == codes.CREATED:
-            campaign.update({"id": content["id"]})
             raise InsufficientSmsError(
-                "Insufficient sms credits to launch this campaign"
+                content["id"],
+                "Insufficient sms credits to launch this campaign",
             )
-        campaign.update(data=content)
-
-    def refresh_campaign(self, campaign: Campaign):
-        """Refresh your campaign data from the api.
-
-        :param campaign: An instance of the class `smsdrop.Campaign`
-        :raises AssertionError: If the campaign you provided was not launched
-        using `client.launch_campaign`
-        :raises ServerError: If the server if failing for some obscure reasons
-        """
-
-        assert (
-            Campaign.id
-        ), "You can't refresh data for a campaign that hasn't yet been launched"
-        refreshed_cp = self.read_campaign(id=campaign.id)
-        campaign.update(refreshed_cp.as_dict())
+        return Campaign(**cast_message_type(content))
 
     def retry_campaign(self, id: str):
         """Retry a campaign if it was not launch due to insufficient sms on the user
@@ -216,27 +205,29 @@ class Client:
         :param id: The id of your campaign
         :raises ServerError: If the server if failing for some obscure reasons
         """
+
         payload = {"id": id}
         response = self._send_request(
             path=CAMPAIGN_RETRY_PATH, payload=payload
         )
         if response.status_code == codes.CREATED:
             raise InsufficientSmsError(
-                "Insufficient sms credits to launch this campaign"
+                id, "Insufficient sms credits to launch this campaign"
             )
 
     def read_campaign(self, id: str) -> Optional[Campaign]:
         """Get a campaign data based on an id
 
         :param id: The cmapign id
-        :return: An instance of `smsdrop.Campaign`
+        :return: An instance of `smsdrop.CampaignIn`
         """
+
         request_path = CAMPAIGN_BASE_PATH + f"{id}"
         response = self._send_request(path=request_path)
         if response.status_code == codes.NOT_FOUND:
             return None
         content = get_json_response(response)
-        return Campaign.from_dict(data=content)
+        return Campaign(**cast_message_type(content))
 
     def read_campaigns(
         self, skip: int = 0, limit: int = 100
@@ -249,8 +240,7 @@ class Client:
         """
         request_path = CAMPAIGN_BASE_PATH + f"?skip={skip}&limit={limit}"
         response = self._send_request(path=request_path)
-        camaigns = [Campaign.from_dict(cp) for cp in response.json()]
-        return camaigns
+        return [Campaign(**cast_message_type(cp)) for cp in response.json()]
 
     def read_subscription(self) -> Subscription:
         """Get your subsctiption informations

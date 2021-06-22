@@ -1,8 +1,40 @@
 import json
+import logging
 from functools import wraps
 
 import httpx
-from httpx import Response
+from httpx import Request, Response
+
+from .models import MessageType
+
+
+def log_request(request: Request, logger: logging.Logger):
+    json_content = (
+        json.loads(request.content) if request.method == "POST" else {}
+    )
+    logger.debug(
+        f"Request: {request.method} {request.url} - Waiting for response\n"
+        f"Content: \n {json.dumps(json_content, indent=2, sort_keys=True)}"
+    )
+
+
+def log_response(response: Response, logger: logging.Logger):
+    request = response.request
+    logger.debug(
+        f"Response: {request.method} {request.url} - Status {response.status_code}\n"
+        f"Content : \n {json.dumps(response.json(), indent=2, sort_keys=True)}"
+    )
+
+
+def sanitize_payload(payload: dict):
+    payload = {key: value for key, value in payload.items() if value}
+    return payload
+
+
+def cast_message_type(content: dict) -> dict:
+    if "message_type" in content:
+        content["message_type"] = MessageType(content["message_type"])
+    return content
 
 
 def get_json_response(response: Response) -> dict:

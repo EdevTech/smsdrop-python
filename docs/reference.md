@@ -1,7 +1,7 @@
 ::: smsdrop.Client
     handler: python
 
-::: smsdrop.Campaign
+::: smsdrop.CampaignCreate
     handler: python
 
 When you create an instance of this class, the only validation that is made is to check if you
