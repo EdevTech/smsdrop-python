@@ -1,7 +1,7 @@
 import datetime
 from abc import ABCMeta
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from enum import IntEnum
 from typing import List, Optional
 
@@ -21,7 +21,7 @@ class CampaignBase(metaclass=ABCMeta):
     recipient_list: List[str] = field(repr=False, compare=False)
     title: str
     message_type: MessageType
-    defer_until: datetime.datetime
+    defer_until: datetime.datetime = field(hash=False)
     defer_by: int
 
 
@@ -59,6 +59,12 @@ class CampaignCreate(CampaignBase):
         assert (
             len(self.recipient_list) >= 1
         ), "recipient list must contain at least one phone number"
+
+    def as_dict(self) -> dict:
+        data = asdict(self)
+        if self.defer_until:
+            data["defer_until"] = self.defer_until.isoformat()
+        return data
 
 
 @dataclass(frozen=True, order=True)

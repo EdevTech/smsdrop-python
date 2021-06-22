@@ -18,7 +18,7 @@ import time
 import pytz
 from dotenv import dotenv_values
 
-from smsdrop import CampaignIn, Client, RedisStorage
+from smsdrop import CampaignCreate, Client, RedisStorage
 
 # Enable Debug Logging
 # This will og the API request and response data to the console:
@@ -46,16 +46,16 @@ def main():
     # Send a simple sms
     client.send_message(message="hi", sender="Max", phone="<phone>")
 
-    # Create a new CampaignIn
-    cp = CampaignIn(
-        title="Test CampaignIn",
+    # Create a new Campaign
+    cp = CampaignCreate(
+        title="Test Campaign",
         message="Test campaign content",
         sender="TestUser",
         recipient_list=["<phone1>", "<phone2>", "<phone3>"],
     )
-    client.launch_campaign(cp)
+    cp = client.launch_campaign(cp)
     time.sleep(20)  # wait for 20 seconds for the campaign to proceed
-    client.refresh_campaign(cp)  # refresh your campaign data
+    cp = client.read_campaign(cp.id)  # refresh your campaign data
     print(cp.status)  # Output Example : COMPLETED
 
     # create a scheduled campaign
@@ -63,36 +63,35 @@ def main():
     aware_dispatch_date = pytz.timezone(MY_TIMEZONE).localize(
         naive_dispatch_date
     )
-    cp2 = CampaignIn(
-        title="Test CampaignIn 2",
+    cp2 = CampaignCreate(
+        title="Test Campaign 2",
         message="Test campaign content 2",
         sender="TestUser",
         recipient_list=["<phone1>", "<phone2>", "<phone3>"],
         # The date will automatically be send in isoformat with the timezone data
         defer_until=aware_dispatch_date,
     )
-    client.launch_campaign(cp2)
+    cp2 = client.launch_campaign(cp2)
     # If you check the status one hour from now it should return 'COMPLETED'
 
     # create another scheduled campaign using defer_by
-    cp2 = CampaignIn(
-        title="Test CampaignIn 3",
+    cp3 = CampaignCreate(
+        title="Test Campaign 3",
         message="Test campaign content 3",
         sender="TestUser",
         recipient_list=["<phone1>", "<phone2>", "<phone3>"],
         defer_by=120,
     )
-    client.launch_campaign(cp2)
+    cp3 = client.launch_campaign(cp3)
     time.sleep(120)  # wait for 120 seconds for the campaign to proceed
-    client.refresh_campaign(cp)  # refresh your campaign data
-    print(cp.status)  # should output : COMPLETED
+    cp3 = client.read_campaign(cp3.id)  # refresh your campaign data
+    print(cp3.status)  # should output : COMPLETED
     # If you get a 'SCHEDULED' printed, you can wait 10 more seconds in case the network
-    # is a little slow or the server is a busy
+    # is a little slow or the server is busy
 
 
 if __name__ == "__main__":
     main()
-
 ```
 
   

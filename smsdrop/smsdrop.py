@@ -2,7 +2,7 @@ import datetime
 import logging
 
 import httpx
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from httpx import Request, Response, codes
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from typing import List, Optional
@@ -41,13 +41,12 @@ _logger = logging.getLogger(__name__)
 class Client:
     """Main module class that make the requests to the smsdrop api.
 
-    :param str email: The email address of your smsdrop api account
-    :param str password: Your account password, default to 1
-    :param Optional[str] context: Root url of the api, defaults to None
-    :param Optional[BaseStorage] storage: A storage object that will be use
+    :argument str email: The email address of your smsdrop account, defaults to [None]
+    :argument str password: Your smsdrop account password
+    :argument Optional[str] context: Root url of the api
+    :argument Optional[BaseStorage] storage: A storage object that will be use
     to store the api token
-    :param logging.Logger logger: A logger instance with your own config if you
-    want to
+    :argument Optioanl[logging.Logger] logger: A logger instance with your own config
     :raises BadCredentialsError: If the password or/and email your provided
     are incorrect
     """
@@ -188,7 +187,7 @@ class Client:
         """
 
         response = self._send_request(
-            path=CAMPAIGN_BASE_PATH, payload=asdict(campaign)
+            path=CAMPAIGN_BASE_PATH, payload=campaign.as_dict()
         )
         content = get_json_response(response)
         if response.status_code == codes.CREATED:

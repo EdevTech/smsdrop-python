@@ -74,7 +74,7 @@ def main():
     cp3 = client.read_campaign(cp3.id)  # refresh your campaign data
     print(cp3.status)  # should output : COMPLETED
     # If you get a 'SCHEDULED' printed, you can wait 10 more seconds in case the network
-    # is a little slow or the server is a busy
+    # is a little slow or the server is busy
 
 
 if __name__ == "__main__":
