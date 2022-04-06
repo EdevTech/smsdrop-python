@@ -1,7 +1,7 @@
-TOKEN_LIFETIME = 3600  # in seconds
+ACCESS_TOKEN_STORAGE_KEY = "smsdrop_bearer_token"
 BASE_URL = "https://smsdrop.edevtecapps.com"
-USER_PATH = "/users/me"
-LOGIN_PATH = "/auth/login"
-CAMPAIGN_BASE_PATH = "/campaigns/"
-CAMPAIGN_RETRY_PATH = "/campaigns/retry"
-SUBSCRIPTION_PATH = "/subscriptions/"
+USER_PATH = "api/users/me"
+LOGIN_PATH = "api/auth/login"
+CAMPAIGN_BASE_PATH = "api/campaigns/"
+CAMPAIGN_RETRY_PATH = "api/campaigns/retry"
+SUBSCRIPTION_PATH = "api/subscriptions/"

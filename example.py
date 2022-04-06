@@ -5,7 +5,7 @@ import time
 import pytz
 from dotenv import dotenv_values
 
-from smsdrop import CampaignCreate, Client, RedisStorage
+from smsdrop import Client, RedisStorage
 
 # Enable Debug Logging
 # This will og the API request and response data to the console:

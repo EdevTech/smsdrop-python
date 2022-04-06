@@ -1,52 +1,50 @@
+from __future__ import annotations
+
 import datetime
 import logging
+from functools import partial
 
 import httpx
 from dataclasses import dataclass, field
-from httpx import Request, Response, codes
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from typing import List, Optional
 
 from .constants import (
+    ACCESS_TOKEN_STORAGE_KEY,
     BASE_URL,
     CAMPAIGN_BASE_PATH,
     CAMPAIGN_RETRY_PATH,
-    LOGIN_PATH,
     SUBSCRIPTION_PATH,
-    TOKEN_LIFETIME,
     USER_PATH,
 )
-from .exceptions import (
-    BadCredentialsError,
+from .errors import (
     BadTokenError,
     InsufficientSmsError,
     ServerError,
     ValidationError,
 )
-from .helpers import (
+from .models import Campaign, Subscription, User
+from .storages import DictStorage, Storage
+from .utils import (
     cast_message_type,
+    get_access_token,
     get_json_response,
     log_request,
-    log_request_error,
     log_response,
-    sanitize_payload,
 )
-from .models import Campaign, CampaignCreate, Subscription, User
-from .storages import BaseStorage, DictStorage
 
 _logger = logging.getLogger(__name__)
 
 
-@dataclass(frozen=True)
+@dataclass
 class Client:
-    """Main module class that make the requests to the smsdrop api.
-
+    """Main module class that make the requests to the smsdrop api
     :argument str email: The email address of your smsdrop account, defaults to [None]
     :argument str password: Your smsdrop account password
     :argument Optional[str] context: Root url of the api
     :argument Optional[BaseStorage] storage: A storage object that will be use
     to store the api token
-    :argument Optioanl[logging.Logger] logger: A logger instance with your own config
+    :argument Optional[logging.Logger] logger: A logger instance with your own config
     :raises BadCredentialsError: If the password or/and email your provided
     are incorrect
     """
@@ -54,86 +52,60 @@ class Client:
     email: str
     password: str
     context: str = BASE_URL
-    storage: BaseStorage = DictStorage()
+    storage: Storage = DictStorage()
     logger: logging.Logger = _logger
-    _http_client: httpx.Client = field(
-        default=httpx.Client(base_url=context, timeout=15), init=False
-    )
+    _http_client: httpx.Client = field(default=None, repr=False, init=False)
+    _get_token: callable = field(default=None, repr=False, init=False)
 
     def __post_init__(self):
-        self._refresh_token()
-
-        # setup event hooks
-        def log_req(request: Request):
-            log_request(request, self.logger)
-
-        def log_resp(response: Response):
-            log_response(response, self.logger)
-
-        self._http_client.event_hooks = {
-            "request": [log_req],
-            "response": [log_resp],
-        }
-
-    def _refresh_token(self):
-        token = self._login()
-        self._set_token(new_token=token)
-        self._http_client.headers["Authorization"] = f"Bearer {self._token}"
-
-    @property
-    def _token_storage_key(self):
-        return f"bearer_token_{self.password}"
-
-    @property
-    def _token(self):
-        return self.storage.get(self._token_storage_key)
-
-    def _set_token(self, new_token):
-        self.storage.set(
-            self._token_storage_key, new_token, expires=TOKEN_LIFETIME
+        self._http_client = httpx.Client(
+            base_url=self.context,
+            timeout=15,
+            event_hooks={
+                "request": [lambda request: log_request(request, self.logger)],
+                "response": [
+                    lambda response: log_response(response, self.logger)
+                ],
+            },
         )
-
-    @log_request_error
-    def _login(self) -> str:
-        response = httpx.post(
-            url=self.context + LOGIN_PATH,
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-            data={"username": self.email, "password": self.password},
+        self._get_token = partial(
+            get_access_token,
+            storage=self.storage,
+            email=self.email,
+            password=self.password,
+            http_client=self._http_client,
         )
-        if response.status_code == codes.BAD_REQUEST:
-            raise BadCredentialsError("Your credentials are incorrect")
-        if response.status_code == codes.OK:
-            content = get_json_response(response)
-            return content["access_token"]
 
     @retry(
         stop=stop_after_attempt(2),
         retry=retry_if_exception_type(BadTokenError),
         reraise=True,
     )
-    @log_request_error
     def _send_request(
-        self, path: str, payload: Optional[dict] = None
+        self, path: str, payload: dict | None = None
     ) -> httpx.Response:
-        if not self._token:
-            self._refresh_token()
         kwargs = {"url": path}
         if payload:
             kwargs.update(
                 {
-                    "json": sanitize_payload(payload),
+                    "json": {
+                        key: value for key, value in payload.items() if value
+                    },
                     "headers": {"content-type": "application/json"},
                 }
             )
         get = getattr(self._http_client, "get")
         post = getattr(self._http_client, "post")
         response: httpx.Response = post(**kwargs) if payload else get(**kwargs)
-        if response.status_code == codes.UNAUTHORIZED:
-            self.storage.delete(self._token_storage_key)
+        if response.status_code == httpx.codes.UNAUTHORIZED:
+            self._http_client.headers[
+                "Authorization"
+            ] = f"Bearer {self._get_token()}"
+            self.storage.delete(ACCESS_TOKEN_STORAGE_KEY)
             raise BadTokenError(response.request.url)
-        if codes.is_server_error(response.status_code):
+        if httpx.codes.is_server_error(response.status_code):
             raise ServerError("The server is failing, try later")
-        if response.status_code == codes.UNPROCESSABLE_ENTITY:
+        if response.status_code == httpx.codes.UNPROCESSABLE_ENTITY:
             raise ValidationError(errors=response.json()["detail"])
         return response
 
@@ -161,7 +133,7 @@ class Client:
         insufficient to send the message
         """
 
-        cp = CampaignCreate(
+        cp = Campaign(
             message=message,
             sender=sender,
             recipient_list=[phone],
@@ -169,7 +141,7 @@ class Client:
         )
         return self.launch_campaign(cp)
 
-    def launch_campaign(self, campaign: CampaignCreate) -> Campaign:
+    def launch_campaign(self, campaign: Campaign) -> Campaign:
         """Send a request to the api to launch a new campaign from the
         `smsdrop.CampaignIn` instance provided
 
@@ -190,7 +162,7 @@ class Client:
             path=CAMPAIGN_BASE_PATH, payload=campaign.as_dict()
         )
         content = get_json_response(response)
-        if response.status_code == codes.CREATED:
+        if response.status_code == httpx.codes.CREATED:
             raise InsufficientSmsError(
                 content["id"],
                 "Insufficient sms credits to launch this campaign",

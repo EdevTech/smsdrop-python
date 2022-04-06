@@ -1,70 +1,65 @@
-from abc import ABCMeta, abstractmethod
+from __future__ import annotations
 
 import redis
 from dataclasses import asdict, dataclass, field
-from typing import Optional
+from typing import Protocol
 
 
-@dataclass
-class BaseStorage(metaclass=ABCMeta):
-    @abstractmethod
-    def get(self, key, **kwargs):
+class Storage(Protocol):
+    def get(self, key: str) -> str | None:
         pass
 
-    @abstractmethod
-    def set(self, key, value, expires, **kwargs):
+    def set(self, key: str, value: str) -> None:
         pass
 
-    @abstractmethod
-    def delete(self, key, **kwargs):
+    def delete(self, key: str) -> str | None:
         pass
 
 
-@dataclass
-class DummyStorage(BaseStorage):
-    @abstractmethod
-    def get(self, *args, **kwargs):
+class DummyStorage:
+    def get(self, key: str) -> str | None:
         pass
 
-    @abstractmethod
-    def set(self, *args, **kwargs):
+    def set(self, key: str, value: str) -> None:
         pass
 
-    @abstractmethod
-    def delete(self, key, **kwargs):
+    def delete(self, key: str) -> str | None:
         pass
 
 
 @dataclass
-class DictStorage(BaseStorage):
-    data: dict = field(default_factory=dict)
+class DictStorage:
+    _data: dict = field(default_factory=dict, repr=False)
 
-    def get(self, key, **_):
-        return self.data.get(key, None)
+    def get(self, key) -> str | None:
+        return self._data.get(key)
 
-    def set(self, key, value, **kwargs):
-        self.data[key] = value
+    def set(self, key: str, value: str) -> None:
+        self._data[key] = value
 
-    def delete(self, key, **_):
-        self.data.pop(key)
+    def delete(self, key: str) -> str | None:
+        return self._data.pop(key, None)
 
 
 @dataclass
-class RedisStorage(BaseStorage):
+class RedisStorage:
     host: str = "localhost"
     port: int = 6379
     db: int = 0
-    username: Optional[str] = None
-    password: Optional[str] = None
+    username: str | None = None
+    password: str | None = None
+    expires_seconds: int | None = None
 
     def __post_init__(self):
-        self._client = redis.Redis(**asdict(self), decode_responses=True)
+        credentials = asdict(self)
+        credentials.pop("expires_seconds")
+        self._client = redis.Redis(**credentials, decode_responses=True)
 
-    def get(self, key, **_):
+    def get(self, key: str) -> str | None:
         return self._client.get(key)
 
-    def set(self, key, value, expires: int, **_):
-        self._client.set(name=key, value=value, ex=expires)
+    def set(self, key: str, value: str):
+        self._client.set(name=key, value=value, ex=self.expires_seconds)
 
-    def delete(self, key, **_):
-        self._client.delete(key)
+    def delete(self, key: str) -> str | None:
+        return self._client.delete(key)

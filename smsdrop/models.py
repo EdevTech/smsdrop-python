@@ -1,39 +1,21 @@
-import datetime
-from abc import ABCMeta
+from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
-from enum import IntEnum
+import datetime
+
+from dataclasses import asdict, dataclass
 from typing import List, Optional
 
-
-class MessageType(IntEnum):
-    PLAIN_TEXT = 0
-    FLASH_MESSAGE = 1
-    UNICODE = 2
+from .utils import MessageType, ShipmentState
 
 
-@dataclass(order=True, frozen=True)
-class CampaignBase(metaclass=ABCMeta):
-    """Common property for campaign"""
-
-    message: str
-    sender: str
-    recipient_list: List[str] = field(repr=False, compare=False)
-    title: str
-    message_type: MessageType
-    defer_until: datetime.datetime = field(hash=False)
-    defer_by: int
-
-
-@dataclass(order=True, frozen=True)
-class CampaignCreate(CampaignBase):
-    """Data class use to create a new campaign.
-
+@dataclass
+class Campaign:
+    """Represent an sms campaign
     :param str title: A title intended to help you identify this campaign,
-    a random name will be generated if you do not provide one.
+        a random name will be generated if you do not provide one
     :param str message: The content of your message
     :param MessageType message_type: The message type, the possible values are
-    `MessageType.PLAIN_TEXT`, `MessageType.UNICODE`, `MessageType.FLASH_MESSAGE`
+        `MessageType.PLAIN_TEXT`, `MessageType.UNICODE`, `MessageType.FLASH_MESSAGE`
     :param str sender:  The sender name that will be displayed on the recipient's phone.
     :param Optional[datetime.datetime] defer_until: The launch date of your campaign.
     It is recommended to specify your timezone infos in order to avoid surprises.
@@ -43,10 +25,18 @@ class CampaignCreate(CampaignBase):
     Ex: +22963588213, the "+" at the beginning is optional.
     """
 
+    message: str
+    sender: str
+    recipient_list: list[str]
+    id: str | None = None
     title: str = None
     message_type: MessageType = MessageType.PLAIN_TEXT
     defer_until: Optional[datetime.datetime] = None
     defer_by: Optional[int] = None
+    delivery_percentage: int = 0
+    message_count: int = 0
+    sms_count: int = 1
+    status: ShipmentState = ShipmentState.PENDING
 
     def __post_init__(self):
         assert not (
@@ -65,17 +55,6 @@ class CampaignCreate(CampaignBase):
         if self.defer_until:
             data["defer_until"] = self.defer_until.isoformat()
         return data
-
-
-@dataclass(frozen=True, order=True)
-class Campaign(CampaignBase):
-    """Data returned to the user"""
-
-    delivery_percentage: int
-    message_count: int
-    sms_count: int
-    status: str
-    id: str = field(compare=False)
 
 
 @dataclass(frozen=True)

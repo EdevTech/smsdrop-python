@@ -1,7 +1,10 @@
 # Smsdrop-Python
 
-[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs)
 [![](https://img.shields.io/pypi/v/smsdrop-python.svg)](https://pypi.python.org/pypi/smsdrop-python)
+[![python](https://img.shields.io/pypi/pyversions/smsdrop-python)](https://github.com/EdevTech/smsdrop-python)
+[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/EdevTech/smsdrop-python/blob/master/LICENSE)
+[![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 
 - Documentation: <a href="https://tobi-de.github.io/smsdrop-python/" target="_blank">https://tobi-de.github.io/smsdrop-python/</a>
 - Source Code: <a href="https://github.com/Tobi-De/smsdrop-python/" target="_blank">https://github.com/Tobi-De/smsdrop-python/</a>

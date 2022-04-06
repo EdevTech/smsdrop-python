@@ -6,13 +6,14 @@ import pytest
 import secrets
 from dataclasses import asdict
 from faker import Faker
-from pytest_httpx import HTTPXMock, to_response
+from pytest_httpx import HTTPXMock
 
 from smsdrop import (
-    CampaignCreate,
+    Campaign,
     Client,
     DictStorage,
     MessageType,
+    ShipmentState,
     Subscription,
     User,
     __version__,
@@ -24,7 +25,6 @@ from smsdrop.constants import (
     SUBSCRIPTION_PATH,
     USER_PATH,
 )
-from smsdrop.models import Campaign
 
 TOKEN = secrets.token_urlsafe(32)
 EMAIL = "degnonfrancis@gmail.com"
@@ -37,7 +37,7 @@ def test_version():
 @pytest.fixture()
 def client(httpx_mock: HTTPXMock) -> Client:
     def custom_response(*args, **kwargs):
-        return to_response(
+        return httpx.Response(
             json={"access_token": TOKEN},
             status_code=httpx.codes.OK,
         )
@@ -52,7 +52,7 @@ def client(httpx_mock: HTTPXMock) -> Client:
 
 @pytest.fixture()
 def campaign(faker: Faker):
-    return CampaignCreate(
+    return Campaign(
         title=faker.name(),
         message=faker.paragraph(nb_sentences=5),
         message_type=MessageType.PLAIN_TEXT,
@@ -74,7 +74,7 @@ def test_read_me(client: Client, httpx_mock: HTTPXMock):
     user = User(id=str(uuid.uuid4()), email=EMAIL, is_active=True)
 
     def custom_response(*args, **kwargs):
-        return to_response(
+        return httpx.Response(
             json=asdict(user),
             status_code=httpx.codes.OK,
         )
@@ -90,7 +90,7 @@ def test_read_subscription(client: Client, httpx_mock: HTTPXMock):
     sub = Subscription(id=str(uuid.uuid4()), nbr_sms=1000)
 
     def custom_response(*args, **kwargs):
-        return to_response(
+        return httpx.Response(
             json=asdict(sub),
             status_code=httpx.codes.OK,
         )
@@ -108,14 +108,14 @@ def test_launch_campaign(
     cp = Campaign(
         **asdict(campaign),
         id=str(uuid.uuid4()),
-        status="PENDING",
+        status=ShipmentState.PENDING,
         delivery_percentage=0,
         message_count=1,
-        sms_count=1
+        sms_count=1,
     )
 
     def custom_response(*args, **kwargs):
-        return to_response(
+        return httpx.Response(
             json=asdict(cp),
             status_code=httpx.codes.OK,
         )
