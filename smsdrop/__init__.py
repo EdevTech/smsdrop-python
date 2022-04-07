@@ -9,9 +9,4 @@ from .errors import (
 )
 from .models import Campaign, Subscription, User
 from .storages import DictStorage, DummyStorage, RedisStorage, Storage
-from .utils import (
-    MessageType,
-    ShipmentState,
-    parse_file_for_phones,
-    split_str_content,
-)
+from .utils import MessageType, ShipmentState

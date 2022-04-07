@@ -2,36 +2,16 @@ from __future__ import annotations
 
 import datetime
 import logging
-from functools import partial
+from functools import cached_property
 
 import httpx
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
-from typing import List, Optional
+from typing import Any, List, Optional
 
-from .constants import (
-    ACCESS_TOKEN_STORAGE_KEY,
-    BASE_URL,
-    CAMPAIGN_BASE_PATH,
-    CAMPAIGN_RETRY_PATH,
-    SUBSCRIPTION_PATH,
-    USER_PATH,
-)
-from .errors import (
-    BadTokenError,
-    InsufficientSmsError,
-    ServerError,
-    ValidationError,
-)
+from . import constants, errors, utils
 from .models import Campaign, Subscription, User
 from .storages import DictStorage, Storage
-from .utils import (
-    cast_message_type,
-    get_access_token,
-    get_json_response,
-    log_request,
-    log_response,
-)
 
 _logger = logging.getLogger(__name__)
 
@@ -51,62 +31,65 @@ class Client:
 
     email: str
     password: str
-    context: str = BASE_URL
+    context: str = constants.BASE_URL
     storage: Storage = DictStorage()
     logger: logging.Logger = _logger
-    _http_client: httpx.Client = field(default=None, repr=False, init=False)
-    _get_token: callable = field(default=None, repr=False, init=False)
 
-    def __post_init__(self):
-        self._http_client = httpx.Client(
+    def __del__(self):
+        self._http_client.close()
+
+    @cached_property
+    def _http_client(self) -> httpx.Client:
+        return httpx.Client(
             base_url=self.context,
             timeout=15,
             event_hooks={
-                "request": [lambda request: log_request(request, self.logger)],
+                "request": [
+                    lambda request: utils.log_request(request, self.logger)
+                ],
                 "response": [
-                    lambda response: log_response(response, self.logger)
+                    lambda response: utils.log_response(response, self.logger)
                 ],
             },
         )
-        self._get_token = partial(
-            get_access_token,
-            storage=self.storage,
-            email=self.email,
-            password=self.password,
-            http_client=self._http_client,
-        )
+
+    def _get_access_token(self):
+        token = self.storage.get(constants.ACCESS_TOKEN_STORAGE_KEY)
+        if not token:
+            token = utils.get_access_token(
+                email=self.email,
+                password=self.password,
+                http_client=self._http_client,
+            )
+            self.storage.set(constants.ACCESS_TOKEN_STORAGE_KEY, token)
+        return token
 
     @retry(
         stop=stop_after_attempt(2),
-        retry=retry_if_exception_type(BadTokenError),
+        retry=retry_if_exception_type(errors.BadTokenError),
         reraise=True,
     )
     def _send_request(
-        self, path: str, payload: dict | None = None
+        self, path: str, payload: dict[str, Any] | None = None
     ) -> httpx.Response:
-        kwargs = {"url": path}
+        # set authorization header
+        self._http_client.headers[
+            "Authorization"
+        ] = f"Bearer {self._get_access_token()}"
+        kwargs: dict[str, Any] = {"url": path}
         if payload:
-            kwargs.update(
-                {
-                    "json": {
-                        key: value for key, value in payload.items() if value
-                    },
-                    "headers": {"content-type": "application/json"},
-                }
-            )
+            kwargs["json"] = payload
+            kwargs["headers"] = {"content-type": "application/json"}
         get = getattr(self._http_client, "get")
         post = getattr(self._http_client, "post")
         response: httpx.Response = post(**kwargs) if payload else get(**kwargs)
         if response.status_code == httpx.codes.UNAUTHORIZED:
-            self._http_client.headers[
-                "Authorization"
-            ] = f"Bearer {self._get_token()}"
-            self.storage.delete(ACCESS_TOKEN_STORAGE_KEY)
-            raise BadTokenError(response.request.url)
+            self.storage.delete(constants.ACCESS_TOKEN_STORAGE_KEY)
+            raise errors.BadTokenError(response.request.url)
         if httpx.codes.is_server_error(response.status_code):
-            raise ServerError("The server is failing, try later")
+            raise errors.ServerError("The server is failing, try later")
         if response.status_code == httpx.codes.UNPROCESSABLE_ENTITY:
-            raise ValidationError(errors=response.json()["detail"])
+            raise errors.ValidationError(errors=response.json()["detail"])
         return response
 
     def send_message(
@@ -119,16 +102,15 @@ class Client:
         """Send a simple message to a single recipient.
 
         This is just a convenient helper to send sms to a unique recipient,
-        internally it work exactly as a campaign and create a new campaign.
-
+        internally it works exactly as a campaign and create a new campaign
         :param message: The content of your message
         :param sender: The sender that will be displayed on the recipient phone
         :param phone: The recipient's phone number, Ex: +229XXXXXXXX
         :param dispatch_date: The date you want the message to be sent
         :return: An instance of the class py:class::`smsdrop.Campaign`
         :rtype: Campaign
-        :raises ValidationError: if some of the data you provided are not valid
-        :raises ServerError: If the server if failing for some obscure reasons
+        :raises ValidationError: if some data you provided are not valid
+        :raises ServerError: If the server is failing for some obscure reasons
         :raises InsufficientSmsError: If the number of sms available on your account is
         insufficient to send the message
         """
@@ -139,9 +121,10 @@ class Client:
             recipient_list=[phone],
             defer_until=dispatch_date,
         )
-        return self.launch_campaign(cp)
+        self.launch(cp)
+        return cp
 
-    def launch_campaign(self, campaign: Campaign) -> Campaign:
+    def launch(self, campaign: Campaign) -> None:
         """Send a request to the api to launch a new campaign from the
         `smsdrop.CampaignIn` instance provided
 
@@ -150,7 +133,6 @@ class Client:
         For example `campaign.id` will always be available even the campaign is
         not launched, it is always created except if there are some validation errors,
         you can use `client.retry(campaign.id)` to retry after you
-
         :param campaign: An instance of the class `smsdrop.CampaignIn`
         :raises InsufficientSmsError: If the number of sms available on your account is
         insufficient to launch the campaign
@@ -159,82 +141,74 @@ class Client:
         """
 
         response = self._send_request(
-            path=CAMPAIGN_BASE_PATH, payload=campaign.as_dict()
+            path=constants.CAMPAIGN_BASE_PATH, payload=campaign.as_dict()
         )
-        content = get_json_response(response)
+        content = utils.get_json_response(response)
         if response.status_code == httpx.codes.CREATED:
-            raise InsufficientSmsError(
+            raise errors.InsufficientSmsError(
                 content["id"],
                 "Insufficient sms credits to launch this campaign",
             )
-        return Campaign(**cast_message_type(content))
+        campaign.update(content)
 
-    def retry_campaign(self, id: str):
+    def retry(self, campaign: Campaign) -> None:
         """Retry a campaign if it was not launch due to insufficient sms on the user
          account
-
-        :param id: The id of your campaign
-        :raises ServerError: If the server if failing for some obscure reasons
+        :param campaign: Your original campaign object
+        :raises ServerError: If the server is failing for some obscure reasons
         """
 
-        payload = {"id": id}
+        payload = {"id": campaign.id}
         response = self._send_request(
-            path=CAMPAIGN_RETRY_PATH, payload=payload
+            path=constants.CAMPAIGN_RETRY_PATH, payload=payload
         )
-        if response.status_code == codes.CREATED:
-            raise InsufficientSmsError(
+        if response.status_code == httpx.codes.CREATED:
+            raise errors.InsufficientSmsError(
                 id, "Insufficient sms credits to launch this campaign"
             )
 
-    def read_campaign(self, id: str) -> Optional[Campaign]:
+    def refresh(self, campaign: Campaign) -> None:
         """Get a campaign data based on an id
-
-        :param id: The cmapign id
+        :param campaign: Your campaign object
         :return: An instance of `smsdrop.CampaignIn`
         """
 
-        request_path = CAMPAIGN_BASE_PATH + f"{id}"
+        request_path = constants.CAMPAIGN_BASE_PATH + f"{id}"
         response = self._send_request(path=request_path)
-        if response.status_code == codes.NOT_FOUND:
+        if response.status_code == httpx.codes.NOT_FOUND:
             return None
-        content = get_json_response(response)
-        return Campaign(**cast_message_type(content))
+        content = utils.get_json_response(response)
+        campaign.update(content)
 
-    def read_campaigns(
-        self, skip: int = 0, limit: int = 100
-    ) -> List[Campaign]:
-        """Get mutliple campaigns from the api
-
+    def get_campaigns(self, skip: int = 0, limit: int = 100) -> List[Campaign]:
+        """Get multiple campaigns from the api
         :param skip: starting index
         :param limit: The maximum amount of element to get
         :return:
         """
-        request_path = CAMPAIGN_BASE_PATH + f"?skip={skip}&limit={limit}"
+        request_path = (
+            constants.CAMPAIGN_BASE_PATH + f"?skip={skip}&limit={limit}"
+        )
         response = self._send_request(path=request_path)
-        return [Campaign(**cast_message_type(cp)) for cp in response.json()]
+        content = utils.get_json_response(response)
+        return [Campaign.from_api_response(cp) for cp in content]
 
-    def read_subscription(self) -> Subscription:
-        """Get your subsctiption informations
-
-        :raises ServerError: If the server if failing for some obscure reasons
+    def get_subscription(self) -> Subscription:
+        """Get your subscription information
+        :raises ServerError: If the server is failing for some obscure reasons
         :return: An instance of the `smsdrop.Subscription` class
         """
 
-        response = self._send_request(path=SUBSCRIPTION_PATH)
-        content = get_json_response(response)
-        return Subscription(id=content["id"], nbr_sms=content["nbr_sms"])
+        response = self._send_request(path=constants.SUBSCRIPTION_PATH)
+        return Subscription.from_api_response(
+            utils.get_json_response(response)
+        )
 
-    def read_me(self) -> User:
-        """Get your profile informations
-
-        :raises ServerError: If the server if failing for some obscure reasons
+    def get_profile(self) -> User:
+        """Get your profile information
+        :raises ServerError: If the server is failing for some obscure reasons
         :return: An instance of the `smsdrop.User` class
         """
 
-        response = self._send_request(path=USER_PATH)
-        content = get_json_response(response)
-        return User(
-            email=content["email"],
-            id=content["id"],
-            is_active=content["is_active"],
-        )
+        response = self._send_request(path=constants.USER_PATH)
+        return User.from_api_response(utils.get_json_response(response))

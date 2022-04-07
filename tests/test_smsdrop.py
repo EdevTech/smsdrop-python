@@ -1,3 +1,4 @@
+import datetime
 import string
 import uuid
 
@@ -16,7 +17,6 @@ from smsdrop import (
     ShipmentState,
     Subscription,
     User,
-    __version__,
 )
 from smsdrop.constants import (
     BASE_URL,
@@ -30,10 +30,6 @@ TOKEN = secrets.token_urlsafe(32)
 EMAIL = "degnonfrancis@gmail.com"
 
 
-def test_version():
-    assert __version__ == "0.1.0"
-
-
 @pytest.fixture()
 def client(httpx_mock: HTTPXMock) -> Client:
     def custom_response(*args, **kwargs):
@@ -45,9 +41,12 @@ def client(httpx_mock: HTTPXMock) -> Client:
     httpx_mock.add_callback(
         custom_response, url=BASE_URL + LOGIN_PATH, method="POST"
     )
-    return Client(
+    client = Client(
         email=EMAIL, password=secrets.token_urlsafe(12), storage=DictStorage()
     )
+    # just to login
+    client.get_profile()
+    return client
 
 
 @pytest.fixture()
@@ -66,12 +65,14 @@ def test_faker(faker):
 
 
 def test_client(client: Client):
-    assert client._token == TOKEN
+    assert client._get_access_token() == TOKEN
     assert client.context == BASE_URL
 
 
-def test_read_me(client: Client, httpx_mock: HTTPXMock):
-    user = User(id=str(uuid.uuid4()), email=EMAIL, is_active=True)
+def test_get_profile(client: Client, httpx_mock: HTTPXMock):
+    user = User(
+        id=str(uuid.uuid4()), email=EMAIL, is_active=True, is_verified=False
+    )
 
     def custom_response(*args, **kwargs):
         return httpx.Response(
@@ -82,12 +83,14 @@ def test_read_me(client: Client, httpx_mock: HTTPXMock):
     httpx_mock.add_callback(
         custom_response, method="GET", url=BASE_URL + USER_PATH
     )
-    user_result = client.read_me()
+    user_result = client.get_profile()
     assert user_result == user
 
 
 def test_read_subscription(client: Client, httpx_mock: HTTPXMock):
-    sub = Subscription(id=str(uuid.uuid4()), nbr_sms=1000)
+    sub = Subscription(
+        id=str(uuid.uuid4()), nbr_sms=1000, created_at=datetime.datetime.now()
+    )
 
     def custom_response(*args, **kwargs):
         return httpx.Response(
@@ -98,12 +101,12 @@ def test_read_subscription(client: Client, httpx_mock: HTTPXMock):
     httpx_mock.add_callback(
         custom_response, method="GET", url=BASE_URL + SUBSCRIPTION_PATH
     )
-    sub_result = client.read_subscription()
+    sub_result = client.get_subscription()
     assert sub_result == sub
 
 
 def test_launch_campaign(
-    client: Client, httpx_mock: HTTPXMock, campaign: CampaignCreate
+    client: Client, httpx_mock: HTTPXMock, campaign: Campaign
 ):
     cp = Campaign(
         **asdict(campaign),
@@ -123,15 +126,15 @@ def test_launch_campaign(
     httpx_mock.add_callback(
         custom_response, method="POST", url=BASE_URL + CAMPAIGN_BASE_PATH
     )
-    cp_result = client.launch_campaign(campaign)
-    assert cp_result == cp
+    client.launch(campaign)
+    assert cp == campaign
 
 
-def test_read_campaign(client: Client, httpx_mock: HTTPXMock):
+def test_refresh_campaign(client: Client, httpx_mock: HTTPXMock):
     pass
 
 
-def test_read_campaigns(client: Client, httpx_mock: HTTPXMock):
+def test_get_campaigns(client: Client, httpx_mock: HTTPXMock):
     pass
 
 

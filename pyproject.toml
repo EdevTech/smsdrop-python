@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "smsdrop-python"
-version = "0.1.0"
+version = "1.0.0"
 description = "A python sdk for the smsdrop.net platform"
 authors = ["Tobi DEGNON <tobidegnon@protonmail.com>"]
 license = "MIT"
