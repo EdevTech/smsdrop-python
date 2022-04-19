@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import logging
-from functools import cached_property
+from functools import cached_property, partial
 
 import httpx
 from dataclasses import dataclass
@@ -10,10 +10,10 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from typing import Any, List, Optional
 
 from . import constants, errors, utils
+from .constants import LOGIN_PATH
+from .logger import logger as _logger
 from .models import Campaign, Subscription, User
 from .storages import DictStorage, Storage
-
-_logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -21,7 +21,7 @@ class Client:
     """Main module class that make the requests to the smsdrop api
     :argument str email: The email address of your smsdrop account, defaults to [None]
     :argument str password: Your smsdrop account password
-    :argument Optional[str] context: Root url of the api
+    :argument Optional[str] base_url: Root url of the api
     :argument Optional[BaseStorage] storage: A storage object that will be use
     to store the api token
     :argument Optional[logging.Logger] logger: A logger instance with your own config
@@ -31,7 +31,7 @@ class Client:
 
     email: str
     password: str
-    context: str = constants.BASE_URL
+    base_url: str = constants.BASE_URL
     storage: Storage = DictStorage()
     logger: logging.Logger = _logger
 
@@ -41,28 +41,35 @@ class Client:
     @cached_property
     def _http_client(self) -> httpx.Client:
         return httpx.Client(
-            base_url=self.context,
+            base_url=self.base_url,
             timeout=15,
             event_hooks={
-                "request": [
-                    lambda request: utils.log_request(request, self.logger)
-                ],
-                "response": [
-                    lambda response: utils.log_response(response, self.logger)
-                ],
+                "request": [partial(utils.log_request, logger=self.logger)],
+                "response": [partial(utils.log_response, logger=self.logger)],
             },
         )
 
-    def _get_access_token(self):
+    def _login(self) -> None:
         token = self.storage.get(constants.ACCESS_TOKEN_STORAGE_KEY)
         if not token:
-            token = utils.get_access_token(
-                email=self.email,
-                password=self.password,
-                http_client=self._http_client,
+            response = self._http_client.post(
+                url=LOGIN_PATH,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                data={"username": self.email, "password": self.password},
             )
+            if response.status_code == httpx.codes.BAD_REQUEST:
+                raise errors.BadCredentialsError(
+                    "Your credentials are incorrect"
+                )
+            assert response.status_code == httpx.codes.OK, "Error login to API"
+            token = utils.get_json_response(response)["access_token"]
+            assert token is not None
             self.storage.set(constants.ACCESS_TOKEN_STORAGE_KEY, token)
-        return token
+        self._http_client.headers["Authorization"] = f"Bearer {token}"
+
+    def _logout(self) -> None:
+        self.storage.delete(constants.ACCESS_TOKEN_STORAGE_KEY)
+        self._http_client.headers["Authorization"] = ""
 
     @retry(
         stop=stop_after_attempt(2),
@@ -70,12 +77,9 @@ class Client:
         reraise=True,
     )
     def _send_request(
-        self, path: str, payload: dict[str, Any] | None = None
+            self, path: str, payload: dict[str, Any] | None = None
     ) -> httpx.Response:
-        # set authorization header
-        self._http_client.headers[
-            "Authorization"
-        ] = f"Bearer {self._get_access_token()}"
+        self._login()
         kwargs: dict[str, Any] = {"url": path}
         if payload:
             kwargs["json"] = payload
@@ -84,7 +88,7 @@ class Client:
         post = getattr(self._http_client, "post")
         response: httpx.Response = post(**kwargs) if payload else get(**kwargs)
         if response.status_code == httpx.codes.UNAUTHORIZED:
-            self.storage.delete(constants.ACCESS_TOKEN_STORAGE_KEY)
+            self._logout()
             raise errors.BadTokenError(response.request.url)
         if httpx.codes.is_server_error(response.status_code):
             raise errors.ServerError("The server is failing, try later")
@@ -93,11 +97,11 @@ class Client:
         return response
 
     def send_message(
-        self,
-        message: str,
-        sender: str,
-        phone: str,
-        dispatch_date: Optional[datetime.datetime] = None,
+            self,
+            message: str,
+            sender: str,
+            phone: str,
+            dispatch_date: Optional[datetime.datetime] = None,
     ) -> Campaign:
         """Send a simple message to a single recipient.
 
@@ -187,7 +191,7 @@ class Client:
         :return:
         """
         request_path = (
-            constants.CAMPAIGN_BASE_PATH + f"?skip={skip}&limit={limit}"
+                constants.CAMPAIGN_BASE_PATH + f"?skip={skip}&limit={limit}"
         )
         response = self._send_request(path=request_path)
         content = utils.get_json_response(response)

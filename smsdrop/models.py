@@ -40,15 +40,15 @@ class Campaign:
     created_at: datetime.datetime | None = None
 
     def __post_init__(self):
-        assert (
-                not self.defer_until and self.defer_by
+        assert not (
+            self.defer_until and self.defer_by
         ), "use either 'defer_until' or 'defer_by' or neither, not both"
         cond_a = self.sender.isalnum() and len(self.sender) > 11
         cond_b = self.sender.isnumeric() and len(self.sender) > 18
         assert not cond_a, "must be <= 11 character if alphanumeric"
         assert not cond_b, "must be <= 18 character if numeric"
         assert (
-                len(self.recipient_list) >= 1
+            len(self.recipient_list) >= 1
         ), "recipient list must contain at least one phone number"
 
     def as_dict(self) -> dict:
