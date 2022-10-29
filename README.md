@@ -6,8 +6,8 @@
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 
-- Documentation: <a href="https://tobi-de.github.io/smsdrop-python/" target="_blank">https://tobi-de.github.io/smsdrop-python/</a>
-- Source Code: <a href="https://github.com/Tobi-De/smsdrop-python/" target="_blank">https://github.com/Tobi-De/smsdrop-python/</a>
+- Documentation: <a href="https://edevtech.github.io/smsdrop-python/" target="_blank">https://edevtech.github.io/smsdrop-python/</a>
+- Source Code: <a href="https://github.com/EdevTech/smsdrop-python" target="_blank">https://github.com/EdevTech/smsdrop-python</a>
 
 The official python sdk for the [smsdrop](https://smsdrop.net) api.
 
